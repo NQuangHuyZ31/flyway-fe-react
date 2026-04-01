@@ -1,68 +1,129 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	Box,
 	Button,
+	Card,
+	CardContent,
+	Grid,
+	TextField,
+	InputAdornment,
+	Chip,
 	Dialog,
 	DialogTitle,
 	DialogContent,
 	DialogActions,
-	TextField,
-	Grid,
-	useTheme,
-	Card,
-	Typography,
-	Chip,
+	FormControl,
+	InputLabel,
+	Select,
+	MenuItem,
+	Pagination,
+	CircularProgress,
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
+	IconButton,
+	Tooltip,
+	Alert,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import {
+	Add as AddIcon,
+	Edit as EditIcon,
+	Delete as DeleteIcon,
+	Search as SearchIcon,
+	Visibility as ViewIcon,
+	Download as DownloadIcon,
+} from '@mui/icons-material';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/common/PageHeader';
-import DataTable from '../../components/common/DataTable';
+import {
+	fetchProducts,
+	setFilters,
+	setCurrentPage,
+	deleteProduct,
+	clearError,
+} from '../../store/slices/productSlice';
+import { addNotification } from '../../store/slices/uiSlice';
 
 const ProductList = () => {
-	const theme = useTheme();
-	const [openDialog, setOpenDialog] = useState(false);
-	const [editingId, setEditingId] = useState(null);
-	const [products, setProducts] = useState([
-		{
-			id: 1,
-			sku: 'SKU001',
-			name: 'Laptop Dell XPS 13',
-			quantity: 100,
-			price: '$1,200.00',
-			category: 'Electronics',
-		},
-		{
-			id: 2,
-			sku: 'SKU002',
-			name: 'Office Chair Pro',
-			quantity: 250,
-			price: '$350.00',
-			category: 'Furniture',
-		},
-		{
-			id: 3,
-			sku: 'SKU003',
-			name: 'Air Conditioner',
-			quantity: 50,
-			price: '$800.00',
-			category: 'Appliances',
-		},
-		{
-			id: 4,
-			sku: 'SKU004',
-			name: 'Monitor 4K 27"',
-			quantity: 75,
-			price: '$599.00',
-			category: 'Electronics',
-		},
-	]);
+	const dispatch = useDispatch();
+	const navigate = useNavigate();
+	const {
+		items: products,
+		loading,
+		error,
+		pagination,
+		filters,
+	} = useSelector((state) => state.products);
+	const [searchTerm, setSearchTerm] = useState(filters.search || '');
+	const [categoryFilter, setCategoryFilter] = useState(
+		filters.category || '',
+	);
+	const [statusFilter, setStatusFilter] = useState(
+		filters.status || 'active',
+	);
+	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+	const [selectedProduct, setSelectedProduct] = useState(null);
 
-	const [formData, setFormData] = useState({
-		sku: '',
-		name: '',
-		quantity: '',
-		price: '',
-		category: '',
-	});
+	useEffect(() => {
+		dispatch(
+			fetchProducts({
+				page: pagination.page,
+				per_page: pagination.per_page,
+				search: searchTerm,
+				category: categoryFilter,
+				status: statusFilter,
+			}),
+		);
+	}, [pagination.page, searchTerm, categoryFilter, statusFilter, dispatch]);
+
+	const handleSearch = (value) => {
+		setSearchTerm(value);
+		dispatch(setCurrentPage(1));
+	};
+
+	const handleCategoryChange = (value) => {
+		setCategoryFilter(value);
+		dispatch(setCurrentPage(1));
+	};
+
+	const handleStatusChange = (value) => {
+		setStatusFilter(value);
+		dispatch(setCurrentPage(1));
+	};
+
+	const handleDeleteClick = (product) => {
+		setSelectedProduct(product);
+		setDeleteConfirmOpen(true);
+	};
+
+	const handleConfirmDelete = async () => {
+		try {
+			dispatch(deleteProduct(selectedProduct.id));
+			dispatch(
+				addNotification({
+					type: 'success',
+					message: `Product "${selectedProduct.name}" deleted successfully`,
+				}),
+			);
+			setDeleteConfirmOpen(false);
+			setSelectedProduct(null);
+		} catch (err) {
+			dispatch(
+				addNotification({
+					type: 'error',
+					message: 'Failed to delete product',
+				}),
+			);
+		}
+	};
+
+	const handlePageChange = (event, newPage) => {
+		dispatch(setCurrentPage(newPage));
+	};
 
 	const getCategoryColor = (category) => {
 		const colors = {
@@ -74,254 +135,21 @@ const ProductList = () => {
 		return colors[category] || 'default';
 	};
 
-	const getCategoryEmoji = (category) => {
-		const emojis = {
-			Electronics: '💻',
-			Furniture: '🛋️',
-			Appliances: '🔌',
-			Other: '📦',
-		};
-		return emojis[category] || '📦';
-	};
-
-	const columns = [
-		{ id: 'sku', label: '🔢 Mã SKU', align: 'left', width: '15%' },
-		{ id: 'name', label: '📦 Tên sản phẩm', align: 'left', width: '30%' },
-		{
-			id: 'category',
-			label: '🏷️ Danh mục',
-			align: 'center',
-			width: '20%',
-			render: (value) => (
-				<Chip
-					label={`${getCategoryEmoji(value)} ${value}`}
-					color={getCategoryColor(value)}
-					size="small"
-					sx={{ fontWeight: 600 }}
-				/>
-			),
-		},
-		{ id: 'quantity', label: '📊 Số lượng', align: 'center', width: '15%' },
-		{ id: 'price', label: '💰 Giá', align: 'right', width: '15%' },
-	];
-
 	const handleAddClick = () => {
-		setEditingId(null);
-		setFormData({
-			sku: '',
-			name: '',
-			quantity: '',
-			price: '',
-			category: '',
-		});
-		setOpenDialog(true);
-	};
-
-	const handleCloseDialog = () => {
-		setOpenDialog(false);
-		setEditingId(null);
-		setFormData({
-			sku: '',
-			name: '',
-			quantity: '',
-			price: '',
-			category: '',
-		});
-	};
-
-	const handleAddProduct = () => {
-		if (editingId) {
-			setProducts(
-				products.map((p) =>
-					p.id === editingId ? { ...p, ...formData } : p,
-				),
-			);
-		} else {
-			const newProduct = {
-				id: products.length + 1,
-				...formData,
-			};
-			setProducts([...products, newProduct]);
-		}
-		handleCloseDialog();
+		navigate('/products/create');
 	};
 
 	const handleEdit = (product) => {
-		setEditingId(product.id);
-		setFormData({
-			sku: product.sku,
-			name: product.name,
-			quantity: product.quantity,
-			price: product.price,
-			category: product.category,
-		});
-		setOpenDialog(true);
+		navigate(`/products/${product.id}/edit`);
 	};
 
 	const handleDelete = (product) => {
-		setProducts(products.filter((p) => p.id !== product.id));
+		handleDeleteClick(product);
 	};
 
 	return (
-		<Box sx={{ pb: 5 }}>
-			<PageHeader
-				title="📦 Quản lý sản phẩm"
-				subtitle="Quản lý danh mục sản phẩm trong kho"
-				actionButton={{ label: '➕ Thêm sản phẩm', icon: <AddIcon /> }}
-				onActionClick={handleAddClick}
-				breadcrumbs={[
-					{ label: '🏠 Trang chủ' },
-					{ label: '📦 Sản phẩm' },
-				]}
-			/>
-
-			<Box sx={{ mt: 3 }}>
-				{/* Stats Cards */}
-				<Grid container spacing={2} sx={{ mb: 3 }}>
-					<Grid item xs={12} sm={6} md={3}>
-						<Card
-							sx={{
-								p: 2.5,
-								background:
-									'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-								color: 'white',
-								borderRadius: 2,
-								boxShadow:
-									'0 8px 16px rgba(102, 126, 234, 0.4)',
-								transition:
-									'transform 0.3s ease, boxShadow 0.3s ease',
-								'&:hover': {
-									transform: 'translateY(-4px)',
-									boxShadow:
-										'0 12px 24px rgba(102, 126, 234, 0.6)',
-								},
-							}}
-						>
-							<Typography
-								variant="h6"
-								sx={{ fontWeight: 600, mb: 0.5 }}
-							>
-								{products.length}
-							</Typography>
-							<Typography variant="body2" sx={{ opacity: 0.9 }}>
-								📦 Tổng sản phẩm
-							</Typography>
-						</Card>
-					</Grid>
-
-					<Grid item xs={12} sm={6} md={3}>
-						<Card
-							sx={{
-								p: 2.5,
-								background:
-									'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-								color: 'white',
-								borderRadius: 2,
-								boxShadow: '0 8px 16px rgba(245, 87, 108, 0.4)',
-								transition:
-									'transform 0.3s ease, boxShadow 0.3s ease',
-								'&:hover': {
-									transform: 'translateY(-4px)',
-									boxShadow:
-										'0 12px 24px rgba(245, 87, 108, 0.6)',
-								},
-							}}
-						>
-							<Typography
-								variant="h6"
-								sx={{ fontWeight: 600, mb: 0.5 }}
-							>
-								{products.reduce(
-									(sum, p) => sum + parseInt(p.quantity || 0),
-									0,
-								)}
-							</Typography>
-							<Typography variant="body2" sx={{ opacity: 0.9 }}>
-								📊 Tổng tồn kho
-							</Typography>
-						</Card>
-					</Grid>
-
-					<Grid item xs={12} sm={6} md={3}>
-						<Card
-							sx={{
-								p: 2.5,
-								background:
-									'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-								color: 'white',
-								borderRadius: 2,
-								boxShadow: '0 8px 16px rgba(79, 172, 254, 0.4)',
-								transition:
-									'transform 0.3s ease, boxShadow 0.3s ease',
-								'&:hover': {
-									transform: 'translateY(-4px)',
-									boxShadow:
-										'0 12px 24px rgba(79, 172, 254, 0.6)',
-								},
-							}}
-						>
-							<Typography
-								variant="h6"
-								sx={{ fontWeight: 600, mb: 0.5 }}
-							>
-								{new Set(products.map((p) => p.category)).size}
-							</Typography>
-							<Typography variant="body2" sx={{ opacity: 0.9 }}>
-								🏷️ Danh mục
-							</Typography>
-						</Card>
-					</Grid>
-
-					<Grid item xs={12} sm={6} md={3}>
-						<Card
-							sx={{
-								p: 2.5,
-								background:
-									'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-								color: 'white',
-								borderRadius: 2,
-								boxShadow:
-									'0 8px 16px rgba(250, 112, 154, 0.4)',
-								transition:
-									'transform 0.3s ease, boxShadow 0.3s ease',
-								'&:hover': {
-									transform: 'translateY(-4px)',
-									boxShadow:
-										'0 12px 24px rgba(250, 112, 154, 0.6)',
-								},
-							}}
-						>
-							<Typography
-								variant="h6"
-								sx={{ fontWeight: 600, mb: 0.5 }}
-							>
-								{products.length > 0
-									? products
-											.reduce(
-												(sum, p) =>
-													sum +
-													parseFloat(
-														p.price.replace(
-															/[$,]/g,
-															'',
-														) || 0,
-													),
-												0,
-											)
-											.toLocaleString('vi-VN', {
-												style: 'currency',
-												currency: 'VND',
-											})
-											.substring(0, 10)
-									: '$0'}
-							</Typography>
-							<Typography variant="body2" sx={{ opacity: 0.9 }}>
-								💰 Giá trị
-							</Typography>
-						</Card>
-					</Grid>
-				</Grid>
-
+		<Box sx={{ backgroundColor: 'white' }}>
+			<Box sx={{ p: 1 }}>
 				{/* Product Table */}
 				<Card
 					sx={{
@@ -336,7 +164,7 @@ const ProductList = () => {
 				>
 					<Box
 						sx={{
-							p: 2.5,
+							p: 2,
 							backgroundColor: '#f5f7fa',
 							borderBottom: '1px solid #e0e0e0',
 						}}
@@ -345,7 +173,7 @@ const ProductList = () => {
 							variant="h6"
 							sx={{ fontWeight: 700, color: '#1a1a1a' }}
 						>
-							📋 Danh sách sản phẩm
+							Danh sách sản phẩm
 						</Typography>
 						<Typography variant="caption" sx={{ color: '#666' }}>
 							Quản lý và cập nhật thông tin sản phẩm trong hệ
@@ -354,7 +182,7 @@ const ProductList = () => {
 					</Box>
 					<Box sx={{ p: 0 }}>
 						<DataTable
-							columns={columns}
+							columns={[]}
 							rows={products}
 							onEdit={handleEdit}
 							onDelete={handleDelete}

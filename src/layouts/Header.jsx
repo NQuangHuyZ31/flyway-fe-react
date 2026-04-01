@@ -1,31 +1,38 @@
-import React, { useContext } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import {
 	AppBar,
 	Toolbar,
-	Badge,
+	Typography,
+	Box,
 	IconButton,
 	Menu,
 	MenuItem,
-	Box,
 	Avatar,
-	Typography,
-	useTheme,
+	Tooltip,
 } from '@mui/material';
 import {
-	Notifications as NotificationsIcon,
-	Settings as SettingsIcon,
 	Logout as LogoutIcon,
-	LightMode as LightModeIcon,
-	DarkMode as DarkModeIcon,
+	Settings as SettingsIcon,
+	Menu as MenuIcon,
 } from '@mui/icons-material';
-import { ThemeContext } from '../contexts/ThemeContext';
+import { logout } from '../store/authSlice';
+import { useToast } from '../contexts/ToastContext';
+import './Header.css';
 
-const Header = () => {
-	const theme = useTheme();
-	const { mode, toggleTheme } = useContext(ThemeContext);
-	const [anchorEl, setAnchorEl] = React.useState(null);
+/**
+ * Header Component
+ * Main navigation header with user menu
+ */
+const Header = ({ onMenuToggle }) => {
+	const navigate = useNavigate();
+	const dispatch = useDispatch();
+	const { showToast } = useToast();
+	const { user } = useSelector((state) => state.auth);
+	const [anchorEl, setAnchorEl] = useState(null);
 
-	const handleProfileMenuOpen = (event) => {
+	const handleMenuOpen = (event) => {
 		setAnchorEl(event.currentTarget);
 	};
 
@@ -33,93 +40,113 @@ const Header = () => {
 		setAnchorEl(null);
 	};
 
-	const handleLogout = () => {
-		// Handle logout logic
+	const handleLogout = async () => {
+		try {
+			dispatch(logout());
+			localStorage.removeItem('token');
+			showToast('Đã đăng xuất thành công', 'success');
+			navigate('/login', { replace: true });
+		} catch (error) {
+			showToast('Lỗi khi đăng xuất', 'error');
+		}
 		handleMenuClose();
 	};
 
+	const handleSettings = () => {
+		navigate('/settings');
+		handleMenuClose();
+	};
+
+	const getInitials = (name) => {
+		if (!name) return 'U';
+		return name
+			.split(' ')
+			.map((n) => n[0])
+			.join('')
+			.toUpperCase()
+			.slice(0, 2);
+	};
+
 	return (
-		<AppBar
-			position="fixed"
-			sx={{
-				zIndex: theme.zIndex.drawer + 1,
-				boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-			}}
-		>
-			<Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-				<Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1 }}>
-					Warehouse Management System
+		<AppBar position="fixed" className="header">
+			<Toolbar className="header-toolbar">
+				{/* Menu Toggle Button */}
+				<IconButton
+					color="inherit"
+					aria-label="toggle menu"
+					onClick={onMenuToggle}
+					className="menu-toggle-btn"
+					sx={{ mr: 2 }}
+				>
+					<MenuIcon />
+				</IconButton>
+
+				{/* App Title */}
+				<Typography
+					variant="h6"
+					component="div"
+					sx={{
+						flexGrow: 1,
+						fontWeight: 600,
+						fontSize: '20px',
+						letterSpacing: '0.5px',
+					}}
+				>
+					Flyway Inventory
 				</Typography>
 
-				<Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-					{/* Notifications */}
-					<IconButton color="inherit" size="large">
-						<Badge badgeContent={4} color="error">
-							<NotificationsIcon />
-						</Badge>
-					</IconButton>
+				{/* User Menu */}
+				<Box className="user-menu">
+					<Typography variant="body2" sx={{ mr: 2 }}>
+						{user?.name || 'Guest'}
+					</Typography>
 
-					{/* Theme Toggle */}
-					<IconButton
-						color="inherit"
-						onClick={toggleTheme}
-						size="large"
-					>
-						{mode === 'light' ? (
-							<DarkModeIcon />
-						) : (
-							<LightModeIcon />
-						)}
-					</IconButton>
-
-					{/* Settings */}
-					<IconButton color="inherit" size="large">
-						<SettingsIcon />
-					</IconButton>
-
-					{/* Profile Menu */}
-					<IconButton
-						onClick={handleProfileMenuOpen}
-						size="small"
-						sx={{ ml: 2 }}
-					>
-						<Avatar
-							sx={{
-								width: 32,
-								height: 32,
-								bgcolor: theme.palette.secondary.main,
-								fontWeight: 'bold',
-							}}
+					<Tooltip title="Account settings">
+						<IconButton
+							onClick={handleMenuOpen}
+							size="small"
+							sx={{ ml: 2 }}
 						>
-							JD
-						</Avatar>
-					</IconButton>
+							<Avatar
+								sx={{
+									width: 36,
+									height: 36,
+									bgcolor: '#3f51b5',
+									fontSize: '14px',
+									fontWeight: 600,
+									cursor: 'pointer',
+									transition: 'all 0.3s ease',
+									'&:hover': {
+										boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+									},
+								}}
+							>
+								{getInitials(user?.name)}
+							</Avatar>
+						</IconButton>
+					</Tooltip>
 
+					{/* Dropdown Menu */}
 					<Menu
 						anchorEl={anchorEl}
+						open={Boolean(anchorEl)}
+						onClose={handleMenuClose}
 						anchorOrigin={{
 							vertical: 'bottom',
 							horizontal: 'right',
 						}}
-						keepMounted
 						transformOrigin={{
 							vertical: 'top',
 							horizontal: 'right',
 						}}
-						open={Boolean(anchorEl)}
-						onClose={handleMenuClose}
 					>
-						<MenuItem disabled>
-							<Avatar sx={{ mr: 2, width: 32, height: 32 }}>
-								JD
-							</Avatar>
-							John Doe
+						<MenuItem onClick={handleSettings}>
+							<SettingsIcon fontSize="small" sx={{ mr: 1 }} />
+							Cài đặt
 						</MenuItem>
-						<MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-						<MenuItem onClick={handleMenuClose}>Settings</MenuItem>
 						<MenuItem onClick={handleLogout}>
-							<LogoutIcon sx={{ mr: 1 }} fontSize="small" />
-							Logout
+							<LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+							Đăng xuất
 						</MenuItem>
 					</Menu>
 				</Box>

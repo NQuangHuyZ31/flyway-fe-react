@@ -12,44 +12,41 @@ const MenuConfig = [
 	{ label: 'Dashboard', path: '/dashboard', icon: DashboardIcon },
 	{
 		label: 'Sản phẩm',
-		path: '/products',
 		icon: InventoryIcon,
-		supmenu: [
+		submenu: [
 			{ label: 'Sản phẩm', path: '/products' },
-			{ label: 'Danh mục', path: '/categories' },
+			// { label: 'Danh mục', path: '/categories' },
 		],
 	},
-	{
-		label: 'Khách hàng',
-		path: '/cust	omers',
-		icon: PeopleIcon,
-		submenu: [
-			{ label: 'Khách hàng', path: '/customers' },
-			{ label: 'Nhà cung cấp', path: '/suppliers' },
-		],
-	},
+	// {
+	// 	label: 'Khách hàng',
+	// 	icon: PeopleIcon,
+	// 	submenu: [
+	// 		{ label: 'Khách hàng', path: '/customers' },
+	// 		{ label: 'Nhà cung cấp', path: '/suppliers' },
+	// 	],
+	// },
 
-	{
-		label: 'Đơn hàng',
-		path: '/orders',
-		icon: OrdersIcon,
-		submenu: [
-			{ label: 'Đơn hàng mua', path: '/sales-orders' },
-			{ label: 'Đơn hàng bán', path: '/purchase-orders' },
-		],
-	},
-	{ label: 'Báo giá', path: '/quotes', icon: QuotationIcon },
-	{
-		label: 'Quản lí tồn kho',
-		path: '/inventory',
-		icon: ShippingIcon,
-		submenu: [
-			{ label: 'Phiếu nhập kho', path: '/stok-ins' },
-			{ label: 'Phiếu xuất kho', path: '/stock-outs' },
-		],
-	},
-	{ label: 'Báo cáo', path: '/reports', icon: ReportsIcon },
-	{ label: 'Hệ thống', path: '/settings', icon: SettingsIcon },
+	// {
+	// 	label: 'Đơn hàng',
+	// 	icon: OrdersIcon,
+	// 	submenu: [
+	// 		{ label: 'Đơn hàng mua', path: '/sales-orders' },
+	// 		{ label: 'Đơn hàng bán', path: '/purchase-orders' },
+	// 	],
+	// },
+	// { label: 'Báo giá', path: '/quotes', icon: QuotationIcon },
+	// {
+	// 	label: 'Quản lí tồn kho',
+	// 	path: '/inventory',
+	// 	icon: ShippingIcon,
+	// 	submenu: [
+	// 		{ label: 'Phiếu nhập kho', path: '/stock-ins' },
+	// 		{ label: 'Phiếu xuất kho', path: '/stock-outs' },
+	// 	],
+	// },
+	// { label: 'Báo cáo', path: '/reports', icon: ReportsIcon },
+	// { label: 'Hệ thống', path: '/settings', icon: SettingsIcon },
 ];
 
 export default MenuConfig;
