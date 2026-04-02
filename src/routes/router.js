@@ -8,7 +8,7 @@ const publicRoute = [
 ];
 
 const privateRoute = [
-	{ path: '/dashboard', component: Dashboard },
+	{ path: '/', component: Dashboard },
 	// product routes
 	{ path: '/products', component: ProductList },
 	// { path: '/products/create', component: ProductCreate },

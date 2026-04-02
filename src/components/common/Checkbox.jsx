@@ -1,9 +1,15 @@
 // src/components/common/Checkbox.jsx
 // Enhanced Checkbox component with indeterminate state
+// Converted to Material-UI
 
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
-import './Checkbox.css';
+import {
+	FormControlLabel,
+	Checkbox as MUICheckbox,
+	FormHelperText,
+	Box,
+} from '@mui/material';
 
 const Checkbox = forwardRef(
 	(
@@ -23,43 +29,41 @@ const Checkbox = forwardRef(
 		},
 		ref,
 	) => {
-		const checkboxClasses = `
-			checkbox
-			${checked ? 'checkbox-checked' : ''}
-			${indeterminate ? 'checkbox-indeterminate' : ''}
-			${disabled ? 'checkbox-disabled' : ''}
-			${error ? 'checkbox-error' : ''}
-			${className}
-		`.trim();
-
 		const inputId = id || name;
 
 		return (
-			<div className={checkboxClasses}>
-				<input
-					ref={ref}
-					type="checkbox"
-					id={inputId}
-					name={name}
-					value={value}
-					checked={checked}
-					onChange={onChange}
-					disabled={disabled}
-					aria-label={ariaLabel || label}
-					aria-checked={indeterminate ? 'mixed' : checked}
-					data-testid={testId}
-					className="checkbox-input"
+			<Box>
+				<FormControlLabel
+					control={
+						<MUICheckbox
+							inputRef={ref}
+							id={inputId}
+							name={name}
+							value={value}
+							checked={checked}
+							onChange={onChange}
+							disabled={disabled}
+							indeterminate={indeterminate}
+							aria-label={ariaLabel || label}
+							inputProps={{
+								'data-testid': testId,
+							}}
+							sx={{
+								color: error ? 'error.main' : undefined,
+							}}
+						/>
+					}
+					label={label}
+					sx={{
+						opacity: disabled ? 0.6 : 1,
+					}}
 				/>
-				<label htmlFor={inputId} className="checkbox-label">
-					<span className="checkbox-icon">
-						{indeterminate ? '−' : checked ? '✓' : ''}
-					</span>
-					{label && <span className="checkbox-text">{label}</span>}
-				</label>
 				{error && (
-					<span className="checkbox-error-message">{error}</span>
+					<FormHelperText error sx={{ marginLeft: '32px' }}>
+						{error}
+					</FormHelperText>
 				)}
-			</div>
+			</Box>
 		);
 	},
 );

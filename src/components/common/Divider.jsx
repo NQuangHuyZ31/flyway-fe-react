@@ -1,9 +1,10 @@
 // src/components/common/Divider.jsx
 // Divider/Separator component
+// Converted to Material-UI
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import './Divider.css';
+import { Divider as MUIDivider, Box } from '@mui/material';
 
 const Divider = ({
 	orientation = 'horizontal',
@@ -13,34 +14,44 @@ const Divider = ({
 	className = '',
 	testId,
 }) => {
-	const dividerClasses = `
-		divider
-		divider-${orientation}
-		divider-${variant}
-		divider-margin-${margin}
-		${className}
-	`.trim();
+	const marginMap = {
+		sm: '8px',
+		md: '16px',
+		lg: '32px',
+	};
 
-	if (orientation === 'vertical') {
-		return (
-			<div
-				className={dividerClasses}
-				role="separator"
-				aria-orientation="vertical"
-				data-testid={testId}
-			/>
-		);
-	}
+	const variantMap = {
+		solid: 'fullWidth',
+		dashed: 'fullWidth',
+		dotted: 'fullWidth',
+	};
+
+	const sx = {
+		...(orientation === 'vertical' && {
+			height: 'auto',
+			width: '1px',
+			margin: `0 ${marginMap[margin]}`,
+		}),
+		...(orientation === 'horizontal' && {
+			margin: `${marginMap[margin]} 0`,
+		}),
+		...(variant === 'dashed' && {
+			borderTopStyle: 'dashed',
+		}),
+		...(variant === 'dotted' && {
+			borderTopStyle: 'dotted',
+		}),
+	};
 
 	return (
-		<div
-			className={dividerClasses}
-			role="separator"
-			aria-orientation="horizontal"
+		<MUIDivider
+			orientation={orientation}
+			variant={variantMap[variant]}
 			data-testid={testId}
+			sx={sx}
 		>
-			{label && <span className="divider-label">{label}</span>}
-		</div>
+			{label && <Box sx={{ px: 1, fontSize: '0.875rem' }}>{label}</Box>}
+		</MUIDivider>
 	);
 };
 

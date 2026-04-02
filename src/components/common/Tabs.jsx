@@ -1,9 +1,10 @@
 // src/components/common/Tabs.jsx
 // Advanced Tabs component with multiple display modes
+// Converted to Material-UI
 
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import './Tabs.css';
+import { Tabs as MUITabs, Tab as MUITab, Box, Badge } from '@mui/material';
 
 const Tabs = ({
 	tabs,
@@ -20,110 +21,134 @@ const Tabs = ({
 }) => {
 	const [activeTabIndex, setActiveTabIndex] = useState(defaultActiveTab);
 
-	const handleTabClick = useCallback(
-		(index) => {
-			setActiveTabIndex(index);
-			onChange?.(index, tabs[index]);
-			onTabChange?.(index);
+	const handleTabChange = useCallback(
+		(event, newValue) => {
+			setActiveTabIndex(newValue);
+			onChange?.(newValue, tabs[newValue]);
+			onTabChange?.(newValue);
 		},
 		[tabs, onChange, onTabChange],
 	);
 
+	const variantMap = {
+		default: 'standard',
+		pills: 'scrollable',
+		underline: 'standard',
+		card: 'fullWidth',
+	};
+
+	const muiVariant = variantMap[variant] || 'standard';
+
 	const activeTab = tabs[activeTabIndex];
 
 	return (
-		<div className={`tabs-wrapper ${className}`.trim()}>
+		<Box className={className}>
 			{/* Tab Headers */}
-			<div
-				className={`tabs-header tabs-${variant} ${
-					fullWidth ? 'tabs-full-width' : ''
-				} ${tabsClassName}`.trim()}
+			<MUITabs
+				value={activeTabIndex}
+				onChange={handleTabChange}
+				variant={fullWidth ? 'fullWidth' : 'standard'}
+				className={tabsClassName}
+				sx={{
+					'& .MuiTab-root': {
+						textTransform: 'none',
+						minWidth: 'auto',
+						padding: '12px 16px',
+					},
+					'& .MuiTabScrollButton-root': {
+						color: 'primary.main',
+					},
+				}}
 			>
-				<div className="tabs-list" role="tablist">
-					{tabs.map((tab, index) => {
-						const isActive = index === activeTabIndex;
-						const tabClasses = `
-							tabs-button
-							${isActive ? 'tabs-button-active' : ''}
-							${tab.disabled ? 'tabs-button-disabled' : ''}
-						`.trim();
-
-						return (
-							<button
-								key={tab.id || index}
-								className={tabClasses}
-								onClick={() =>
-									!tab.disabled && handleTabClick(index)
-								}
-								disabled={tab.disabled}
-								role="tab"
-								aria-selected={isActive}
-								aria-controls={`tab-panel-${index}`}
-								id={`tab-${index}`}
-								type="button"
+				{tabs.map((tab, index) => {
+					const label = tab.badge ? (
+						<Badge
+							badgeContent={tab.badge}
+							color="primary"
+							sx={{ '& .MuiBadge-badge': { top: 0, right: 0 } }}
+						>
+							<Box
+								sx={{
+									display: 'flex',
+									alignItems: 'center',
+									gap: '8px',
+								}}
 							>
-								{tab.icon && (
-									<span
-										className="tabs-button-icon"
-										aria-hidden="true"
-									>
-										{typeof tab.icon === 'function' ? (
-											<tab.icon />
-										) : (
-											tab.icon
-										)}
-									</span>
+								{tab.icon && typeof tab.icon === 'function' ? (
+									<tab.icon />
+								) : (
+									tab.icon
 								)}
-								<span className="tabs-button-label">
-									{tab.label}
-								</span>
-								{tab.badge && (
-									<span className="tabs-button-badge">
-										{tab.badge}
-									</span>
-								)}
-							</button>
-						);
-					})}
-				</div>
+								<span>{tab.label}</span>
+							</Box>
+						</Badge>
+					) : (
+						<Box
+							sx={{
+								display: 'flex',
+								alignItems: 'center',
+								gap: '8px',
+							}}
+						>
+							{tab.icon && typeof tab.icon === 'function' ? (
+								<tab.icon />
+							) : (
+								tab.icon
+							)}
+							<span>{tab.label}</span>
+						</Box>
+					);
 
-				{/* Scroll indicators for small screens */}
-				<div className="tabs-scroll-indicator" aria-hidden="true" />
-			</div>
+					return (
+						<MUITab
+							key={tab.id || index}
+							label={label}
+							disabled={tab.disabled}
+							id={`tab-${index}`}
+							aria-controls={`tab-panel-${index}`}
+						/>
+					);
+				})}
+			</MUITabs>
 
 			{/* Tab Content */}
-			<div
-				className={`tabs-content ${
-					animated ? 'tabs-animated' : ''
-				} ${contentClassName}`.trim()}
-			>
+			<Box className={contentClassName}>
 				{tabs.map((tab, index) => {
 					const isActive = index === activeTabIndex;
 					const shouldRender = !lazy || isActive;
 
 					return (
-						<div
+						<Box
 							key={tab.id || index}
 							id={`tab-panel-${index}`}
-							className={`tabs-panel ${
-								isActive ? 'tabs-panel-active' : ''
-							}`}
 							role="tabpanel"
 							aria-labelledby={`tab-${index}`}
 							hidden={!isActive}
+							sx={{
+								display: isActive ? 'block' : 'none',
+								animation:
+									animated && isActive
+										? 'fadeIn 0.3s ease-in'
+										: 'none',
+								'@keyframes fadeIn': {
+									from: { opacity: 0 },
+									to: { opacity: 1 },
+								},
+								padding: '16px 0',
+							}}
 						>
 							{shouldRender && (
-								<div className="tabs-panel-content">
+								<Box>
 									{typeof tab.content === 'function'
 										? tab.content()
 										: tab.content}
-								</div>
+								</Box>
 							)}
-						</div>
+						</Box>
 					);
 				})}
-			</div>
-		</div>
+			</Box>
+		</Box>
 	);
 };
 

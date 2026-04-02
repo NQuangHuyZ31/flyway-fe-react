@@ -52,7 +52,7 @@ const LoginPage = () => {
 					);
 				}
 
-				navigate('/dashboard');
+				navigate('/');
 			}
 			setError('');
 		} catch (error) {

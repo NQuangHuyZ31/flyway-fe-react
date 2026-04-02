@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useCallback, useState } from 'react';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -7,110 +7,57 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Link } from 'react-router-dom';
 
-const columns = [
-	{ id: 'name', label: 'Name', minWidth: 170 },
-	{ id: 'code', label: 'ISO\u00a0Code', minWidth: 100 },
-	{
-		id: 'population',
-		label: 'Population',
-		minWidth: 170,
-		align: 'right',
-		format: (value) => value.toLocaleString('en-US'),
-	},
-	{
-		id: 'size',
-		label: 'Size\u00a0(km\u00b2)',
-		minWidth: 170,
-		align: 'right',
-		format: (value) => value.toLocaleString('en-US'),
-	},
-	{
-		id: 'density',
-		label: 'Density',
-		minWidth: 170,
-		align: 'right',
-		format: (value) => value.toFixed(2),
-	},
-	{
-		id: 'density2',
-		label: 'Density',
-		minWidth: 170,
-		align: 'right',
-		format: (value) => value.toFixed(2),
-	},
-	{
-		id: 'density3',
-		label: 'Density',
-		minWidth: 170,
-		align: 'right',
-		format: (value) => value.toFixed(2),
-	},
-	{
-		id: 'density4',
-		label: 'Density',
-		minWidth: 170,
-		align: 'right',
-		format: (value) => value.toFixed(2),
-	},
-	{
-		id: 'density5',
-		label: 'Density',
-		minWidth: 170,
-		align: 'right',
-		format: (value) => value.toFixed(2),
-	},
-	{
-		id: 'density6',
-		label: 'Density',
-		minWidth: 170,
-		align: 'right',
-		format: (value) => value.toFixed(2),
-	},
-	{
-		id: 'density7',
-		label: 'Density',
-		minWidth: 170,
-		align: 'right',
-		format: (value) => value.toFixed(2),
-	},
-];
+function DataTable({
+	columns,
+	rows,
+	pagination,
+	total,
+	onPageChange,
+	onView,
+	onDelete,
+	showActions = true,
+	to = '',
+	linkLabel = '',
+}) {
+	const [anchorEl, setAnchorEl] = useState(null);
+	const [selectedRowId, setSelectedRowId] = useState(null);
 
-function createData(name, code, population, size) {
-	const density = population / size;
-	return { name, code, population, size, density };
-}
-
-const rows = [
-	createData('India', 'IN', 1324171354, 3287263),
-	createData('China', 'CN', 1403500365, 9596961),
-	createData('Italy', 'IT', 60483973, 301340),
-	createData('United States', 'US', 327167434, 9833520),
-	createData('Canada', 'CA', 37602103, 9984670),
-	createData('Australia', 'AU', 25475400, 7692024),
-	createData('Germany', 'DE', 83019200, 357578),
-	createData('Ireland', 'IE', 4857000, 70273),
-	createData('Mexico', 'MX', 126577691, 1972550),
-	createData('Japan', 'JP', 126317000, 377973),
-	createData('France', 'FR', 67022000, 640679),
-	createData('United Kingdom', 'GB', 67545757, 242495),
-	createData('Russia', 'RU', 146793744, 17098246),
-	createData('Nigeria', 'NG', 200962417, 923768),
-	createData('Brazil', 'BR', 210147125, 8515767),
-];
-
-export default function StickyHeadTable() {
-	const [page, setPage] = React.useState(0);
-	const [rowsPerPage, setRowsPerPage] = React.useState(10);
-
-	const handleChangePage = (event, newPage) => {
-		setPage(newPage);
+	const handleMenuOpen = (event, rowId) => {
+		setAnchorEl(event.currentTarget);
+		setSelectedRowId(rowId);
 	};
 
-	const handleChangeRowsPerPage = (event) => {
-		setRowsPerPage(+event.target.value);
-		setPage(0);
+	const handleMenuClose = () => {
+		setAnchorEl(null);
+		setSelectedRowId(null);
 	};
+
+	const handleView = () => {
+		if (onView) {
+			onView(selectedRowId);
+		}
+		handleMenuClose();
+	};
+
+	const handleDelete = () => {
+		if (onDelete) {
+			onDelete(selectedRowId);
+		}
+		handleMenuClose();
+	};
+
+	const handleChangePage = useCallback(
+		(event, newPage) => {
+			onPageChange(newPage);
+		},
+		[onPageChange],
+	);
 
 	return (
 		<Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -135,11 +82,23 @@ export default function StickyHeadTable() {
 				<Table stickyHeader aria-label="sticky table">
 					<TableHead>
 						<TableRow>
+							{showActions && (
+								<TableCell
+									align="center"
+									sx={{
+										minWidth: 56,
+										fontWeight: 'bold',
+									}}
+								></TableCell>
+							)}
 							{columns.map((column) => (
 								<TableCell
-									key={column.id}
+									key={column.key}
 									align={column.align}
-									style={{ minWidth: column.minWidth }}
+									style={{
+										minWidth: column.minWidth ?? 170,
+										fontWeight: 'bold',
+									}}
 								>
 									{column.label}
 								</TableCell>
@@ -147,48 +106,89 @@ export default function StickyHeadTable() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{rows
-							.slice(
-								page * rowsPerPage,
-								page * rowsPerPage + rowsPerPage,
-							)
-							.map((row) => {
-								return (
-									<TableRow
-										hover
-										role="checkbox"
-										tabIndex={-1}
-										key={row.code}
-									>
-										{columns.map((column) => {
-											const value = row[column.id];
-											return (
-												<TableCell
-													key={column.id}
-													align={column.align}
+						{rows.map((row) => {
+							return (
+								<TableRow
+									hover
+									role="checkbox"
+									tabIndex={-1}
+									key={row.id}
+								>
+									{showActions && (
+										<TableCell align="center">
+											<IconButton
+												size="small"
+												onClick={(e) =>
+													handleMenuOpen(e, row.id)
+												}
+												aria-label="actions"
+											>
+												<MoreVertIcon fontSize="small" />
+											</IconButton>
+										</TableCell>
+									)}
+									{columns.map((column) => {
+										const value = row[column.key];
+										return column.key == linkLabel && to ? (
+											<TableCell
+												key={column.key}
+												align={column.align}
+											>
+												<Link
+													key={row.id}
+													to={`${to}/${row.id}/detail`}
+													style={{
+														textDecoration: 'none',
+														color: 'blue',
+													}}
 												>
 													{column.format &&
 													typeof value === 'number'
 														? column.format(value)
 														: value}
-												</TableCell>
-											);
-										})}
-									</TableRow>
-								);
-							})}
+												</Link>
+											</TableCell>
+										) : (
+											<TableCell
+												key={column.key}
+												align={column.align}
+											>
+												{column.format &&
+												typeof value === 'number'
+													? column.format(value)
+													: value}
+											</TableCell>
+										);
+									})}
+								</TableRow>
+							);
+						})}
 					</TableBody>
 				</Table>
 			</TableContainer>
+
+			{/* Action Menu */}
+			<Menu
+				anchorEl={anchorEl}
+				open={Boolean(anchorEl)}
+				onClose={handleMenuClose}
+			>
+				<MenuItem onClick={handleView}>Xem chi tiết</MenuItem>
+				<MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+					Xóa
+				</MenuItem>
+			</Menu>
+
 			<TablePagination
-				rowsPerPageOptions={[10, 25, 100]}
+				rowsPerPageOptions={[]}
 				component="div"
-				count={rows.length}
-				rowsPerPage={rowsPerPage}
-				page={page}
+				count={total}
+				rowsPerPage={pagination.per_page}
+				page={pagination.page - 1}
 				onPageChange={handleChangePage}
-				onRowsPerPageChange={handleChangeRowsPerPage}
 			/>
 		</Paper>
 	);
 }
+
+export default React.memo(DataTable);

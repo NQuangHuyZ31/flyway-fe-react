@@ -1,9 +1,11 @@
 // src/components/common/Alert.jsx
 // Alert/notification component with variants and actions
+// Converted to Material-UI
 
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import './Alert.css';
+import { Alert as MUIAlert, AlertTitle, Box, IconButton } from '@mui/material';
+import { Close } from '@mui/icons-material';
 
 const Alert = ({
 	type = 'info',
@@ -49,45 +51,41 @@ const Alert = ({
 
 	if (!isVisible) return null;
 
-	const alertClasses = `
-		alert
-		alert-${type}
-		alert-${variant}
-		${className}
-	`.trim();
+	// Map custom variant to MUI variant
+	const muiVariant = variant === 'light' ? 'outlined' : variant;
+
+	// Map type to MUI severity
+	const severityMap = {
+		success: 'success',
+		error: 'error',
+		warning: 'warning',
+		info: 'info',
+	};
+
+	const severity = severityMap[type] || 'info';
 
 	return (
-		<div className={alertClasses} role="alert" data-testid={testId}>
-			<div className="alert-content">
-				{Icon && (
-					<div className="alert-icon" aria-hidden="true">
-						<Icon />
-					</div>
-				)}
-
-				<div className="alert-body">
-					{title && <h5 className="alert-title">{title}</h5>}
-					{message && <p className="alert-message">{message}</p>}
-					{children}
-				</div>
-			</div>
-
-			{(actions || closable) && (
-				<div className="alert-actions">
-					{actions}
-					{closable && (
-						<button
-							type="button"
-							className="alert-close"
-							onClick={handleClose}
-							aria-label="Close alert"
-						>
-							✕
-						</button>
-					)}
-				</div>
-			)}
-		</div>
+		<MUIAlert
+			severity={severity}
+			variant={muiVariant}
+			onClose={closable ? handleClose : undefined}
+			icon={Icon ? <Icon /> : undefined}
+			data-testid={testId}
+			action={
+				actions ? (
+					<Box sx={{ display: 'flex', gap: '8px' }}>{actions}</Box>
+				) : undefined
+			}
+			sx={{
+				'& .MuiAlert-action': {
+					padding: '0 0 0 16px',
+				},
+			}}
+		>
+			{title && <AlertTitle>{title}</AlertTitle>}
+			{message && <Box>{message}</Box>}
+			{children}
+		</MUIAlert>
 	);
 };
 

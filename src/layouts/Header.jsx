@@ -17,19 +17,19 @@ import {
 	Settings as SettingsIcon,
 	Menu as MenuIcon,
 } from '@mui/icons-material';
-import { logout } from '../store/authSlice';
 import { useToast } from '../contexts/ToastContext';
 import './Header.css';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Header Component
  * Main navigation header with user menu
  */
 const Header = ({ onMenuToggle }) => {
+	const { user } = useAuth();
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
 	const { showToast } = useToast();
-	const { user } = useSelector((state) => state.auth);
 	const [anchorEl, setAnchorEl] = useState(null);
 
 	const handleMenuOpen = (event) => {

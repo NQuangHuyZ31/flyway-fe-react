@@ -15,16 +15,16 @@
 
 .layout-content {
 	flex: 1;
-	padding: 24px;
 	overflow-y: auto;
 	background-color: #fafafa;
 	max-width: 100%;
+	padding-bottom: 60px;
 }
 
 /* Desktop layout */
 @media (min-width: 961px) {
 	.layout-content {
-		margin-left: 250px;
+		margin-left: 0;
 	}
 }
 
@@ -36,6 +36,7 @@
 
 	.layout-content {
 		padding: 20px;
+		padding-bottom: 80px;
 	}
 
 	.main-layout {
@@ -51,6 +52,7 @@
 
 	.layout-content {
 		padding: 16px;
+		padding-bottom: 110px;
 		margin-top: 56px;
 	}
 

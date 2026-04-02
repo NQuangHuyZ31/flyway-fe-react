@@ -6,6 +6,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import { publicRoute, privateRoute } from './routes/router';
 import ProtectedRoute from './layouts/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
+import MainLayout from './layouts/MainLayout';
 
 function App() {
 	return (
@@ -28,7 +29,11 @@ function App() {
 								<Route
 									key={index}
 									path={route.path}
-									element={<route.component />}
+									element={
+										<MainLayout>
+											<route.component />
+										</MainLayout>
+									}
 								/>
 							))}
 						</Route>

@@ -1,9 +1,10 @@
 // src/components/common/Tooltip.jsx
 // Advanced Tooltip component with positioning and animations
+// Converted to Material-UI
 
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import './Tooltip.css';
+import { Tooltip as MUITooltip, Box } from '@mui/material';
 
 const Tooltip = ({
 	content,
@@ -17,86 +18,47 @@ const Tooltip = ({
 	arrow = true,
 	disabled = false,
 }) => {
-	const [isVisible, setIsVisible] = useState(false);
-	const [delayTimer, setDelayTimer] = useState(null);
-	const wrapperRef = useRef(null);
-	const tooltipRef = useRef(null);
-
-	const showTooltip = () => {
-		if (disabled) return;
-		const timer = setTimeout(() => setIsVisible(true), delay);
-		setDelayTimer(timer);
+	// Map custom position to MUI placement
+	const placementMap = {
+		top: 'top',
+		bottom: 'bottom',
+		left: 'left',
+		right: 'right',
 	};
 
-	const hideTooltip = () => {
-		if (delayTimer) clearTimeout(delayTimer);
-		setIsVisible(false);
-	};
-
-	const handleClick = () => {
-		if (disabled) return;
-		if (trigger === 'click') {
-			setIsVisible(!isVisible);
-		}
-	};
-
-	useEffect(() => {
-		const handleClickOutside = (e) => {
-			if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-				hideTooltip();
-			}
-		};
-
-		if (isVisible && trigger === 'click') {
-			document.addEventListener('mousedown', handleClickOutside);
-		}
-
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, [isVisible, trigger]);
-
-	const tooltipClasses = `
-		tooltip-content
-		tooltip-${theme}
-		tooltip-${position}
-		${isVisible ? 'tooltip-visible' : ''}
-		${arrow ? 'tooltip-arrow' : ''}
-	`.trim();
-
-	const triggerProps = {
-		...(trigger === 'hover' && {
-			onMouseEnter: showTooltip,
-			onMouseLeave: hideTooltip,
-		}),
-		...(trigger === 'click' && {
-			onClick: handleClick,
-		}),
-		...(trigger === 'focus' && {
-			onFocus: showTooltip,
-			onBlur: hideTooltip,
-		}),
+	const tooltipClasses = {
+		'& .MuiTooltip-tooltip': {
+			maxWidth: `${maxWidth}px`,
+			backgroundColor: theme === 'dark' ? '#333' : '#fff',
+			color: theme === 'dark' ? '#fff' : '#333',
+			border: theme === 'light' ? '1px solid #ccc' : 'none',
+			fontSize: '0.875rem',
+			padding: '8px 12px',
+			boxShadow:
+				theme === 'dark'
+					? '0 4px 6px rgba(0, 0, 0, 0.1)'
+					: '0 2px 4px rgba(0, 0, 0, 0.1)',
+		},
+		'& .MuiTooltip-arrow': {
+			color: theme === 'dark' ? '#333' : '#fff',
+		},
 	};
 
 	return (
-		<div
-			ref={wrapperRef}
-			className={`tooltip-wrapper ${className}`.trim()}
-			{...triggerProps}
+		<MUITooltip
+			title={content}
+			placement={placementMap[position]}
+			arrow={arrow}
+			disableHoverListener={disabled}
+			disableFocusListener={disabled}
+			disableTouchListener={disabled}
+			enterDelay={delay}
+			sx={tooltipClasses}
 		>
-			{children}
-
-			{isVisible && (
-				<div
-					ref={tooltipRef}
-					className={tooltipClasses}
-					style={{ maxWidth: `${maxWidth}px` }}
-					role="tooltip"
-				>
-					<div className="tooltip-content-inner">{content}</div>
-				</div>
-			)}
-		</div>
+			<Box className={className} component="span">
+				{children}
+			</Box>
+		</MUITooltip>
 	);
 };
 

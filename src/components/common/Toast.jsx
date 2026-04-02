@@ -1,60 +1,16 @@
-// src/components/common/Toast.jsx
-// Toast notification component
+import { useEffect } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
-
-const Toast = ({
-	id,
-	message,
-	type = 'info',
-	duration = 3000,
-	onClose,
-	position = 'top-right',
-}) => {
+const Toast = ({ message, type = 'error', duration = 3000 }) => {
 	useEffect(() => {
-		if (duration && duration > 0) {
-			const timer = setTimeout(() => {
-				onClose?.(id);
-			}, duration);
-			return () => clearTimeout(timer);
+		if (message) {
+			toast[type](message, {
+				autoClose: duration,
+			});
 		}
-	}, [duration, id, onClose]);
+	}, [message, type, duration]);
 
-	const typeIcon = {
-		success: '✓',
-		error: '✕',
-		warning: '⚠',
-		info: 'ℹ',
-	};
-
-	return (
-		<div className={`toast toast-${type} toast-${position}`}>
-			<div className="toast-icon">{typeIcon[type]}</div>
-			<div className="toast-content">{message}</div>
-			<button
-				className="toast-close"
-				onClick={() => onClose?.(id)}
-				aria-label="Close notification"
-			>
-				×
-			</button>
-		</div>
-	);
-};
-
-Toast.propTypes = {
-	id: PropTypes.string.isRequired,
-	message: PropTypes.string.isRequired,
-	type: PropTypes.oneOf(['success', 'error', 'warning', 'info']),
-	duration: PropTypes.number,
-	onClose: PropTypes.func,
-	position: PropTypes.oneOf([
-		'top-left',
-		'top-right',
-		'bottom-left',
-		'bottom-right',
-	]),
+	return <ToastContainer />;
 };
 
 export default Toast;
