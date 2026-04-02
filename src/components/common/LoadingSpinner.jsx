@@ -18,18 +18,22 @@ const LoadingSpinner = ({
 	return (
 		<Box
 			sx={{
+				position: 'fixed', // 🔥 quan trọng
+				top: 0,
+				left: 0,
+				width: '100vw',
+				height: '100vh',
 				display: 'flex',
 				flexDirection: 'column',
 				justifyContent: 'center',
 				alignItems: 'center',
-				gap: 2,
-				height: fullHeight ? '100vh' : 'auto',
-				p: 4,
+				backgroundColor: 'rgba(0,0,0,0.3)', // nền mờ
+				zIndex: 9999, // nổi lên trên cùng
 			}}
 		>
-			<CircularProgress size={size} />
+			<CircularProgress size={size} color="warning" />
 			{message && (
-				<Typography color="textSecondary" sx={{ mt: 2 }}>
+				<Typography color="white" sx={{ mt: 2 }}>
 					{message}
 				</Typography>
 			)}

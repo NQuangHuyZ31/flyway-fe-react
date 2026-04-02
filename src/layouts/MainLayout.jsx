@@ -1,29 +1,43 @@
+import React, { useState } from 'react';
+import { Box } from '@mui/material';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import { Box } from '@mui/material';
+import Footer from './Footer';
+import './MainLayout.css';
 
-export default function MainLayout({ children }) {
+/**
+ * MainLayout Component
+ * Main layout wrapper with header, sidebar, footer, and content area
+ */
+const MainLayout = ({ children }) => {
+	const [sidebarOpen, setSidebarOpen] = useState(false);
+
+	const handleSidebarToggle = () => {
+		setSidebarOpen(!sidebarOpen);
+	};
+
+	const handleSidebarClose = () => {
+		setSidebarOpen(false);
+	};
+
 	return (
-		<Box
-			sx={{
-				display: 'flex',
-				flexDirection: 'column',
-				minHeight: '100vh',
-			}}
-		>
-			<Header />
-			<Box sx={{ display: 'flex', flex: 1 }}>
-				<Sidebar />
-				<Box
-					sx={{
-						flex: 1,
-						overflow: 'auto',
-						backgroundColor: '#f5f7fa',
-					}}
-				>
-					<Box sx={{ p: 3 }}>{children}</Box>
-				</Box>
+		<Box className="main-layout">
+			{/* Header */}
+			<Header onMenuToggle={handleSidebarToggle} />
+
+			{/* Main Content Area */}
+			<Box className="layout-container">
+				{/* Sidebar */}
+				<Sidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
+
+				{/* Content */}
+				<Box className="layout-content">{children}</Box>
 			</Box>
+
+			{/* Footer */}
+			<Footer />
 		</Box>
 	);
-}
+};
+
+export default MainLayout;

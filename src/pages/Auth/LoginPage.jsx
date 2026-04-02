@@ -2,41 +2,64 @@ import React, { useState } from 'react';
 import {
 	Box,
 	Container,
-	Paper,
 	TextField,
 	Button,
 	Typography,
 	Alert,
-	useTheme,
 	Card,
 	CardContent,
 	Grid,
+	useTheme,
 } from '@mui/material';
 import { Login as LoginIcon } from '@mui/icons-material';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
+import auth from '../../api/services/AuthService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage = () => {
 	const theme = useTheme();
+	const navigate = useNavigate();
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState('');
+	const { login } = useAuth();
 	const [credentials, setCredentials] = useState({
 		email: '',
 		password: '',
+		type: 'email',
 	});
-	const [error, setError] = useState('');
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
-		setCredentials((prev) => ({
-			...prev,
-			[name]: value,
-		}));
+		setCredentials((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handleLogin = () => {
-		if (!credentials.email || !credentials.password) {
-			setError('Please fill in all fields');
-			return;
+	const handleLogin = async () => {
+		setLoading(true);
+		try {
+			const res = await auth.login(credentials);
+
+			if (res?.token) {
+				localStorage.setItem('token', res.token);
+
+				try {
+					const user = await auth.getCurrentUser();
+					login(user.data);
+				} catch (error) {
+					console.error(
+						'Failed to fetch user info after login:',
+						error,
+					);
+				}
+
+				navigate('/dashboard');
+			}
+			setError('');
+		} catch (error) {
+			setError(error.message || 'Đăng nhập thất bại');
+		} finally {
+			setLoading(false);
 		}
-		// Handle login logic
-		console.log('Login attempt with:', credentials);
 	};
 
 	return (
@@ -90,10 +113,10 @@ const LoginPage = () => {
 								variant="h4"
 								sx={{ fontWeight: 'bold', mb: 1 }}
 							>
-								Welcome Back
+								Chào mừng trở lại!
 							</Typography>
 							<Typography variant="body2" color="textSecondary">
-								Sign in to your account to continue
+								Đăng nhập để tiếp tục
 							</Typography>
 						</Box>
 
@@ -137,28 +160,7 @@ const LoginPage = () => {
 								justifyContent: 'space-between',
 								alignItems: 'center',
 							}}
-						>
-							<Typography
-								variant="body2"
-								sx={{
-									cursor: 'pointer',
-									color: theme.palette.primary.main,
-									'&:hover': { textDecoration: 'underline' },
-								}}
-							>
-								Remember me
-							</Typography>
-							<Typography
-								variant="body2"
-								sx={{
-									cursor: 'pointer',
-									color: theme.palette.primary.main,
-									'&:hover': { textDecoration: 'underline' },
-								}}
-							>
-								Forgot password?
-							</Typography>
-						</Box>
+						></Box>
 
 						{/* Login Button */}
 						<Button
@@ -173,38 +175,15 @@ const LoginPage = () => {
 								fontSize: '1rem',
 							}}
 						>
-							Sign In
+							Đăng nhập
 						</Button>
-
-						{/* Demo Credentials */}
-						<Paper
-							elevation={0}
-							sx={{
-								p: 2,
-								backgroundColor:
-									theme.palette.mode === 'light'
-										? theme.palette.grey[50]
-										: theme.palette.grey[800],
-								borderRadius: 1,
-							}}
-						>
-							<Typography
-								variant="caption"
-								display="block"
-								sx={{ fontWeight: 'bold', mb: 1 }}
-							>
-								Demo Credentials:
-							</Typography>
-							<Typography variant="caption" display="block">
-								Email: admin@example.com
-							</Typography>
-							<Typography variant="caption" display="block">
-								Password: password123
-							</Typography>
-						</Paper>
 					</CardContent>
 				</Card>
-
+				<LoadingSpinner
+					loading={loading}
+					message="Đang đăng nhập..."
+					fullHeight={false}
+				/>
 				{/* Footer */}
 				<Box sx={{ mt: 3, textAlign: 'center', color: 'white' }}>
 					<Typography variant="body2">

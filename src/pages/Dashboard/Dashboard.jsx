@@ -7,7 +7,6 @@ import {
 	Card,
 	CardContent,
 } from '@mui/material';
-import PageHeader from '../../components/common/PageHeader';
 import { StatsCard } from '../../components/common/Cards';
 import {
 	Inventory2 as InventoryIcon,
@@ -21,17 +20,32 @@ const Dashboard = () => {
 	const theme = useTheme();
 
 	return (
-		<Box sx={{ width: '100%' }}>
-			<Box sx={{ mb: 4 }}>
-				<Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-					📊 Bảng Điều Khiển
-				</Typography>
-				<Typography variant="body1" color="textSecondary">
-					Chào mừng đến với Hệ Thống Quản Lý Kho - Cập nhật tình trạng
-					kho hàng
+		<Box
+			sx={{
+				width: '100%',
+				backgroundColor: 'white',
+				p: 3,
+				boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+			}}
+		>
+			<Box
+				sx={{
+					borderBottom: '1px solid ' + theme.palette.divider,
+					mb: 2,
+				}}
+			>
+				<Typography
+					variant="h4"
+					ant="h4"
+					sx={{
+						fontWeight: 600,
+						color: theme.palette.text.primary,
+						mb: 1,
+					}}
+				>
+					Bảng Điều Khiển
 				</Typography>
 			</Box>
-
 			{/* Stats Cards */}
 			<Grid container spacing={2} sx={{ mb: 4 }}>
 				<Grid item xs={12} sm={6} md={3}>

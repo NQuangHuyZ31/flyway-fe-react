@@ -1,250 +1,194 @@
-import React from 'react';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	Paper,
-	Checkbox,
-	TablePagination,
-	Box,
-	IconButton,
-	useTheme,
-	Menu,
-	MenuItem,
-} from '@mui/material';
-import {
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-	MoreVert as MoreVertIcon,
-} from '@mui/icons-material';
+import * as React from 'react';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TablePagination from '@mui/material/TablePagination';
+import TableRow from '@mui/material/TableRow';
 
-const DataTable = ({
-	columns,
-	rows,
-	onEdit,
-	onDelete,
-	selectable = false,
-	onSelect,
-	loading = false,
-	pagination = true,
-}) => {
-	const theme = useTheme();
-	const [selected, setSelected] = React.useState([]);
+const columns = [
+	{ id: 'name', label: 'Name', minWidth: 170 },
+	{ id: 'code', label: 'ISO\u00a0Code', minWidth: 100 },
+	{
+		id: 'population',
+		label: 'Population',
+		minWidth: 170,
+		align: 'right',
+		format: (value) => value.toLocaleString('en-US'),
+	},
+	{
+		id: 'size',
+		label: 'Size\u00a0(km\u00b2)',
+		minWidth: 170,
+		align: 'right',
+		format: (value) => value.toLocaleString('en-US'),
+	},
+	{
+		id: 'density',
+		label: 'Density',
+		minWidth: 170,
+		align: 'right',
+		format: (value) => value.toFixed(2),
+	},
+	{
+		id: 'density2',
+		label: 'Density',
+		minWidth: 170,
+		align: 'right',
+		format: (value) => value.toFixed(2),
+	},
+	{
+		id: 'density3',
+		label: 'Density',
+		minWidth: 170,
+		align: 'right',
+		format: (value) => value.toFixed(2),
+	},
+	{
+		id: 'density4',
+		label: 'Density',
+		minWidth: 170,
+		align: 'right',
+		format: (value) => value.toFixed(2),
+	},
+	{
+		id: 'density5',
+		label: 'Density',
+		minWidth: 170,
+		align: 'right',
+		format: (value) => value.toFixed(2),
+	},
+	{
+		id: 'density6',
+		label: 'Density',
+		minWidth: 170,
+		align: 'right',
+		format: (value) => value.toFixed(2),
+	},
+	{
+		id: 'density7',
+		label: 'Density',
+		minWidth: 170,
+		align: 'right',
+		format: (value) => value.toFixed(2),
+	},
+];
+
+function createData(name, code, population, size) {
+	const density = population / size;
+	return { name, code, population, size, density };
+}
+
+const rows = [
+	createData('India', 'IN', 1324171354, 3287263),
+	createData('China', 'CN', 1403500365, 9596961),
+	createData('Italy', 'IT', 60483973, 301340),
+	createData('United States', 'US', 327167434, 9833520),
+	createData('Canada', 'CA', 37602103, 9984670),
+	createData('Australia', 'AU', 25475400, 7692024),
+	createData('Germany', 'DE', 83019200, 357578),
+	createData('Ireland', 'IE', 4857000, 70273),
+	createData('Mexico', 'MX', 126577691, 1972550),
+	createData('Japan', 'JP', 126317000, 377973),
+	createData('France', 'FR', 67022000, 640679),
+	createData('United Kingdom', 'GB', 67545757, 242495),
+	createData('Russia', 'RU', 146793744, 17098246),
+	createData('Nigeria', 'NG', 200962417, 923768),
+	createData('Brazil', 'BR', 210147125, 8515767),
+];
+
+export default function StickyHeadTable() {
 	const [page, setPage] = React.useState(0);
 	const [rowsPerPage, setRowsPerPage] = React.useState(10);
-	const [anchorEl, setAnchorEl] = React.useState(null);
-	const [selectedRow, setSelectedRow] = React.useState(null);
-
-	const handleSelectAll = (event) => {
-		if (event.target.checked) {
-			setSelected(rows.map((row, index) => index));
-			onSelect && onSelect(rows.map((row, index) => index));
-		} else {
-			setSelected([]);
-			onSelect && onSelect([]);
-		}
-	};
-
-	const handleSelectRow = (index) => {
-		const newSelected = selected.includes(index)
-			? selected.filter((i) => i !== index)
-			: [...selected, index];
-		setSelected(newSelected);
-		onSelect && onSelect(newSelected);
-	};
 
 	const handleChangePage = (event, newPage) => {
 		setPage(newPage);
 	};
 
 	const handleChangeRowsPerPage = (event) => {
-		setRowsPerPage(parseInt(event.target.value, 10));
+		setRowsPerPage(+event.target.value);
 		setPage(0);
 	};
 
-	const handleMenuOpen = (event, rowIndex) => {
-		setAnchorEl(event.currentTarget);
-		setSelectedRow(rowIndex);
-	};
-
-	const handleMenuClose = () => {
-		setAnchorEl(null);
-		setSelectedRow(null);
-	};
-
-	const displayRows = pagination
-		? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-		: rows;
-
 	return (
-		<Box>
+		<Paper sx={{ width: '100%', overflow: 'hidden' }}>
 			<TableContainer
-				component={Paper}
 				sx={{
-					boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-					borderRadius: 2,
+					maxHeight: 420,
+					'&::-webkit-scrollbar': {
+						height: '6px',
+					},
+					'&::-webkit-scrollbar-track': {
+						background: '#f1f1f1',
+					},
+					'&::-webkit-scrollbar-thumb': {
+						background: '#888',
+						borderRadius: '3px',
+					},
+					'&::-webkit-scrollbar-thumb:hover': {
+						background: '#555',
+					},
 				}}
 			>
-				<Table>
+				<Table stickyHeader aria-label="sticky table">
 					<TableHead>
-						<TableRow
-							sx={{
-								backgroundColor:
-									theme.palette.mode === 'light'
-										? theme.palette.grey[50]
-										: theme.palette.grey[800],
-								borderBottom: `2px solid ${theme.palette.divider}`,
-							}}
-						>
-							{selectable && (
-								<TableCell padding="checkbox">
-									<Checkbox
-										indeterminate={
-											selected.length > 0 &&
-											selected.length < rows.length
-										}
-										checked={
-											rows.length > 0 &&
-											selected.length === rows.length
-										}
-										onChange={handleSelectAll}
-									/>
-								</TableCell>
-							)}
+						<TableRow>
 							{columns.map((column) => (
 								<TableCell
 									key={column.id}
-									align={column.align || 'left'}
-									sx={{
-										fontWeight: 'bold',
-										fontSize: '0.9rem',
-										py: 2,
-									}}
+									align={column.align}
+									style={{ minWidth: column.minWidth }}
 								>
 									{column.label}
 								</TableCell>
 							))}
-							{(onEdit || onDelete) && (
-								<TableCell align="center">Actions</TableCell>
-							)}
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{displayRows.map((row, rowIndex) => (
-							<TableRow
-								key={row.id || rowIndex}
-								hover
-								sx={{
-									backgroundColor: selected.includes(rowIndex)
-										? theme.palette.action.selected
-										: 'inherit',
-									'&:hover': {
-										backgroundColor:
-											theme.palette.action.hover,
-									},
-								}}
-							>
-								{selectable && (
-									<TableCell padding="checkbox">
-										<Checkbox
-											checked={selected.includes(
-												rowIndex,
-											)}
-											onChange={() =>
-												handleSelectRow(rowIndex)
-											}
-										/>
-									</TableCell>
-								)}
-								{columns.map((column) => (
-									<TableCell
-										key={`${row.id}-${column.id}`}
-										align={column.align || 'left'}
-										sx={{
-											py: 2,
-										}}
+						{rows
+							.slice(
+								page * rowsPerPage,
+								page * rowsPerPage + rowsPerPage,
+							)
+							.map((row) => {
+								return (
+									<TableRow
+										hover
+										role="checkbox"
+										tabIndex={-1}
+										key={row.code}
 									>
-										{column.render
-											? column.render(row[column.id], row)
-											: row[column.id]}
-									</TableCell>
-								))}
-								{(onEdit || onDelete) && (
-									<TableCell align="center">
-										<IconButton
-											size="small"
-											onClick={(event) =>
-												handleMenuOpen(event, rowIndex)
-											}
-										>
-											<MoreVertIcon fontSize="small" />
-										</IconButton>
-										<Menu
-											anchorEl={anchorEl}
-											open={
-												selectedRow === rowIndex &&
-												Boolean(anchorEl)
-											}
-											onClose={handleMenuClose}
-										>
-											{onEdit && (
-												<MenuItem
-													onClick={() => {
-														onEdit(row);
-														handleMenuClose();
-													}}
+										{columns.map((column) => {
+											const value = row[column.id];
+											return (
+												<TableCell
+													key={column.id}
+													align={column.align}
 												>
-													<EditIcon
-														sx={{ mr: 1 }}
-														fontSize="small"
-													/>{' '}
-													Edit
-												</MenuItem>
-											)}
-											{onDelete && (
-												<MenuItem
-													onClick={() => {
-														onDelete(row);
-														handleMenuClose();
-													}}
-													sx={{
-														color: theme.palette
-															.error.main,
-													}}
-												>
-													<DeleteIcon
-														sx={{ mr: 1 }}
-														fontSize="small"
-													/>{' '}
-													Delete
-												</MenuItem>
-											)}
-										</Menu>
-									</TableCell>
-								)}
-							</TableRow>
-						))}
+													{column.format &&
+													typeof value === 'number'
+														? column.format(value)
+														: value}
+												</TableCell>
+											);
+										})}
+									</TableRow>
+								);
+							})}
 					</TableBody>
 				</Table>
 			</TableContainer>
-
-			{pagination && (
-				<TablePagination
-					rowsPerPageOptions={[5, 10, 25, 50]}
-					component="div"
-					count={rows.length}
-					rowsPerPage={rowsPerPage}
-					page={page}
-					onPageChange={handleChangePage}
-					onRowsPerPageChange={handleChangeRowsPerPage}
-					sx={{ borderTop: `1px solid ${theme.palette.divider}` }}
-				/>
-			)}
-		</Box>
+			<TablePagination
+				rowsPerPageOptions={[10, 25, 100]}
+				component="div"
+				count={rows.length}
+				rowsPerPage={rowsPerPage}
+				page={page}
+				onPageChange={handleChangePage}
+				onRowsPerPageChange={handleChangeRowsPerPage}
+			/>
+		</Paper>
 	);
-};
-
-export default DataTable;
+}

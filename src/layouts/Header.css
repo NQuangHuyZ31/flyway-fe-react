@@ -1,0 +1,50 @@
+/* Header.css */
+.header {
+	background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%) !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+	position: fixed !important;
+	top: 0;
+	width: 100%;
+	z-index: 100;
+}
+
+.header-toolbar {
+	padding: 0 20px !important;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 64px;
+}
+
+.menu-toggle-btn {
+	display: none;
+	margin-right: 16px;
+}
+
+.user-menu {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+	.menu-toggle-btn {
+		display: inline-flex !important;
+	}
+
+	.header-toolbar {
+		padding: 0 10px !important;
+	}
+}
+
+@media (max-width: 600px) {
+	.header-toolbar {
+		min-height: 56px;
+		padding: 0 8px !important;
+	}
+
+	.user-menu {
+		gap: 8px;
+	}
+}

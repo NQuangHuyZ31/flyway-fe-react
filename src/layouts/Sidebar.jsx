@@ -1,150 +1,250 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
 	Drawer,
 	List,
+	ListItem,
 	ListItemButton,
 	ListItemIcon,
 	ListItemText,
 	Collapse,
-	useTheme,
 	Box,
-	Avatar,
 	Typography,
-	Divider,
 } from '@mui/material';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
-import MenuConfig from '../configs/menuConfig';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import MenuConfig from '../configs/menuConfig';
+import './Sidebar.css';
 
-const menuItems = MenuConfig;
-console.log('MenuConfig:', MenuConfig);
-
-const Sidebar = ({ open = true, onDrawerToggle }) => {
-	const theme = useTheme();
+/**
+ * Sidebar Component
+ * Navigation sidebar with menu items and submenu support
+ */
+const Sidebar = ({ isOpen, onClose }) => {
+	const navigate = useNavigate();
 	const location = useLocation();
-	const [openSubmenus, setOpenSubmenus] = useState(false);
+	const [expandedMenu, setExpandedMenu] = useState(null);
 
-	const handleSubmenuToggle = (label) => {
-		setOpenSubmenus((prev) => (prev === label ? false : label));
+	const handleMenuClick = (item) => {
+		if (item.submenu) {
+			// Toggle submenu expansion
+			setExpandedMenu(expandedMenu === item.label ? null : item.label);
+		} else if (item.path) {
+			// Navigate to path
+			navigate(item.path);
+			onClose();
+		}
 	};
 
-	const drawerContent = (
-		<Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-			{/* Logo/Header Section */}
-			<Box
-				sx={{
-					p: 3,
-					display: 'flex',
-					flexDirection: 'column',
-					alignItems: 'center',
-					gap: 2,
-					borderBottom: `1px solid ${theme.palette.divider}`,
-				}}
-			>
-				<Avatar
-					sx={{
-						width: 56,
-						height: 56,
-						bgcolor: theme.palette.primary.main,
-						fontWeight: 'bold',
-						fontSize: '1.5rem',
-					}}
-				>
-					<img src="../assets/react.svg" alt="avatar" />
-				</Avatar>
-				<Typography
-					variant="h6"
-					sx={{ fontWeight: 'bold', textAlign: 'center' }}
-				>
-					WMS System
-				</Typography>
-				<Typography
-					variant="caption"
-					color="textSecondary"
-					sx={{ textAlign: 'center' }}
-				>
-					Warehouse Management
-				</Typography>
-			</Box>
+	const isMenuActive = (item) => {
+		if (item.path) {
+			return location.pathname === item.path;
+		}
+		if (item.submenu) {
+			return item.submenu.some((sub) => sub.path === location.pathname);
+		}
+		return false;
+	};
 
-			{/* Navigation Items */}
-			<List sx={{ flex: 1, py: 2, px: 1 }}>
-				{menuItems.map((item) => (
-					<React.Fragment key={item.label}>
-						<ListItemButton
-							component={RouterLink}
-							to={item.path}
-							onClick={() =>
-								item.submenu && handleSubmenuToggle(item.label)
-							}
+	const isSubmenuActive = (path) => {
+		return location.pathname === path;
+	};
+
+	const renderMenuItems = () => {
+		return MenuConfig.map((item) => {
+			const IconComponent = item.icon;
+
+			if (item.submenu && item.submenu.length > 0) {
+				return (
+					<div key={item.label}>
+						<ListItem
+							disablePadding
+							className={`menu-item ${
+								isMenuActive(item) ? 'active' : ''
+							}`}
 						>
-							<ListItemIcon>
-								{item.icon && <item.icon />}
-							</ListItemIcon>
-							<ListItemText primary={item.label} />
-							{item.submenu &&
-								(openSubmenus === item.label ? (
-									<ExpandLess />
-								) : (
-									<ExpandMore />
-								))}
-						</ListItemButton>
-
-						{item.submenu && (
-							<Collapse
-								in={openSubmenus === item.label}
-								timeout="auto"
-								unmountOnExit
+							<ListItemButton
+								onClick={() => handleMenuClick(item)}
+								sx={{
+									pl: 2,
+									'&:hover': {
+										bgcolor: 'rgba(63, 81, 181, 0.1)',
+									},
+								}}
 							>
-								<List>
-									{item.submenu.map((subItem) => (
+								<ListItemIcon sx={{ minWidth: 40 }}>
+									<IconComponent
+										sx={{
+											color: isMenuActive(item)
+												? '#3f51b5'
+												: 'inherit',
+										}}
+									/>
+								</ListItemIcon>
+								<ListItemText
+									primary={item.label}
+									primaryTypographyProps={{
+										fontSize: '14px',
+										fontWeight: isMenuActive(item)
+											? 600
+											: 500,
+									}}
+								/>
+								{expandedMenu === item.label ? (
+									<ExpandLess fontSize="small" />
+								) : (
+									<ExpandMore fontSize="small" />
+								)}
+							</ListItemButton>
+						</ListItem>
+
+						{/* Submenu */}
+						<Collapse
+							in={expandedMenu === item.label}
+							timeout="auto"
+							unmountOnExit
+						>
+							<List component="div" disablePadding>
+								{item.submenu.map((subitem) => (
+									<ListItem
+										key={subitem.path}
+										disablePadding
+										className={`submenu-item ${
+											isSubmenuActive(subitem.path)
+												? 'active'
+												: ''
+										}`}
+									>
 										<ListItemButton
-											key={subItem.label}
-											component={RouterLink}
-											to={subItem.path}
-											sx={{ pl: 4 }}
+											onClick={() => {
+												navigate(subitem.path);
+												onClose();
+											}}
+											sx={{
+												pl: 6,
+												bgcolor: isSubmenuActive(
+													subitem.path,
+												)
+													? 'rgba(63, 81, 181, 0.15)'
+													: 'transparent',
+												'&:hover': {
+													bgcolor:
+														'rgba(63, 81, 181, 0.1)',
+												},
+												borderLeft: isSubmenuActive(
+													subitem.path,
+												)
+													? '3px solid #3f51b5'
+													: 'none',
+											}}
 										>
-											<ListItemIcon>
-												{subItem.icon && (
-													<subItem.icon />
-												)}
-											</ListItemIcon>
 											<ListItemText
-												primary={subItem.label}
+												primary={subitem.label}
+												primaryTypographyProps={{
+													fontSize: '13px',
+													fontWeight: isSubmenuActive(
+														subitem.path,
+													)
+														? 600
+														: 400,
+													color: isSubmenuActive(
+														subitem.path,
+													)
+														? '#3f51b5'
+														: 'inherit',
+												}}
 											/>
 										</ListItemButton>
-									))}
-								</List>
-							</Collapse>
-						)}
-					</React.Fragment>
-				))}
-			</List>
+									</ListItem>
+								))}
+							</List>
+						</Collapse>
+					</div>
+				);
+			}
 
-			{/* Footer Section */}
-			<Divider />
-			<Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-				<Typography variant="caption" color="textSecondary">
-					© 2024 WMS System
-				</Typography>
-			</Box>
-		</Box>
-	);
+			// Regular menu item without submenu
+			return (
+				<ListItem
+					key={item.path}
+					disablePadding
+					className={`menu-item ${
+						isMenuActive(item) ? 'active' : ''
+					}`}
+				>
+					<ListItemButton
+						onClick={() => handleMenuClick(item)}
+						sx={{
+							pl: 2,
+							bgcolor: isMenuActive(item)
+								? 'rgba(63, 81, 181, 0.1)'
+								: 'transparent',
+							'&:hover': {
+								bgcolor: 'rgba(63, 81, 181, 0.1)',
+							},
+							borderLeft: isMenuActive(item)
+								? '3px solid #3f51b5'
+								: 'none',
+						}}
+					>
+						<ListItemIcon sx={{ minWidth: 40 }}>
+							<IconComponent
+								sx={{
+									color: isMenuActive(item)
+										? '#3f51b5'
+										: 'inherit',
+								}}
+							/>
+						</ListItemIcon>
+						<ListItemText
+							primary={item.label}
+							primaryTypographyProps={{
+								fontSize: '14px',
+								fontWeight: isMenuActive(item) ? 600 : 500,
+								color: isMenuActive(item)
+									? '#3f51b5'
+									: 'inherit',
+							}}
+						/>
+					</ListItemButton>
+				</ListItem>
+			);
+		});
+	};
 
 	return (
 		<Drawer
-			variant="permanent"
+			variant="temporary"
+			open={isOpen}
+			onClose={onClose}
 			sx={{
-				width: 280,
+				width: 250,
 				flexShrink: 0,
 				'& .MuiDrawer-paper': {
-					width: 280,
+					width: 250,
 					boxSizing: 'border-box',
-					top: 64, // Height of AppBar
+					mt: 8,
+					bgcolor: '#f7f9fc',
+					borderRight: '1px solid #e0e0e0',
 				},
 			}}
 		>
-			{drawerContent}
+			<Box sx={{ p: 2 }}>
+				<Typography
+					variant="subtitle2"
+					sx={{
+						pl: 2,
+						color: '#666',
+						fontSize: '11px',
+						fontWeight: 700,
+						textTransform: 'uppercase',
+						letterSpacing: 1,
+						mb: 2,
+					}}
+				>
+					Menu
+				</Typography>
+				<List className="sidebar-menu">{renderMenuItems()}</List>
+			</Box>
 		</Drawer>
 	);
 };
