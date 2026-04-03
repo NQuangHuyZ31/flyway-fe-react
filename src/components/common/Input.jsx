@@ -1,9 +1,17 @@
 // src/components/common/Input.jsx
 // Enhanced Input component with validation, accessibility, and rich features
+// Converted to Material-UI
 
 import React, { forwardRef, useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import './Input.css';
+import {
+	TextField,
+	InputAdornment,
+	Box,
+	FormHelperText,
+	IconButton,
+} from '@mui/material';
+import { Visibility, VisibilityOff, Close } from '@mui/icons-material';
 
 const Input = forwardRef(
 	(
@@ -39,6 +47,9 @@ const Input = forwardRef(
 			ariaDescribedBy,
 			testId,
 			debounceDelay = 0,
+			fullWidth = true,
+			variant = 'outlined',
+			size = 'small',
 			...props
 		},
 		ref,
@@ -46,27 +57,7 @@ const Input = forwardRef(
 		const [internalValue, setInternalValue] = useState(value || '');
 		const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 		const [validationError, setValidationError] = useState(null);
-		const [isFocused, setIsFocused] = useState(false);
 		const [debounceTimer, setDebounceTimer] = useState(null);
-
-		// Input classes
-		const inputClasses = `
-			input
-			input-${type}
-			${error || validationError ? 'input-error' : ''}
-			${successMessage && touched ? 'input-success' : ''}
-			${disabled ? 'input-disabled' : ''}
-			${readOnly ? 'input-readonly' : ''}
-			${Icon ? `input-with-icon input-icon-${iconPosition}` : ''}
-			${prefix ? 'input-with-prefix' : ''}
-			${suffix ? 'input-with-suffix' : ''}
-			${isFocused ? 'input-focused' : ''}
-			${className}
-		`.trim();
-
-		const wrapperClasses = `input-wrapper ${
-			disabled ? 'input-wrapper-disabled' : ''
-		}`.trim();
 
 		// Custom validation
 		const validateInput = useCallback(
@@ -116,7 +107,6 @@ const Input = forwardRef(
 
 		const handleBlur = useCallback(
 			(e) => {
-				setIsFocused(false);
 				onBlur?.(e);
 				if (validation) {
 					validateInput(e.target.value);
@@ -127,7 +117,6 @@ const Input = forwardRef(
 
 		const handleFocus = useCallback(
 			(e) => {
-				setIsFocused(true);
 				onFocus?.(e);
 			},
 			[onFocus],
@@ -151,116 +140,112 @@ const Input = forwardRef(
 		const showClearButton =
 			clearable && displayValue && !disabled && !readOnly;
 
-		return (
-			<div className={wrapperClasses}>
-				{label && (
-					<label className="input-label" htmlFor={name}>
-						<span>{label}</span>
-						{required && (
-							<span
-								className="input-required"
-								aria-label="required"
-							>
-								*
-							</span>
-						)}
-					</label>
-				)}
+		const hasError = (error || validationError) && touched;
+		const helperText = hasError
+			? errorMessage || error || validationError
+			: hint;
 
-				<div className="input-container">
-					{Icon && iconPosition === 'left' && (
-						<Icon
-							className="input-icon input-icon-left"
-							aria-hidden="true"
-						/>
+		// Build start adornment
+		let startAdornment = null;
+		if (prefix || (Icon && iconPosition === 'left')) {
+			startAdornment = (
+				<InputAdornment position="start">
+					{Icon && iconPosition === 'left' && <Icon />}
+					{prefix && (
+						<span style={{ marginLeft: '4px' }}>{prefix}</span>
 					)}
+				</InputAdornment>
+			);
+		}
 
-					{prefix && <span className="input-prefix">{prefix}</span>}
-
-					<input
-						ref={ref}
-						id={name}
-						className={inputClasses}
-						name={name}
-						type={effectiveType}
-						placeholder={placeholder}
-						value={displayValue}
-						onChange={handleChange}
-						onBlur={handleBlur}
-						onFocus={handleFocus}
-						disabled={disabled}
-						readOnly={readOnly}
-						required={required}
-						maxLength={maxLength}
-						minLength={minLength}
-						pattern={pattern}
-						aria-label={ariaLabel || label}
-						aria-describedby={ariaDescribedBy}
-						aria-invalid={!!(error || validationError)}
-						data-testid={testId}
-						{...props}
-					/>
-
-					{suffix && <span className="input-suffix">{suffix}</span>}
-
+		// Build end adornment
+		let endAdornment = null;
+		if (
+			suffix ||
+			showPasswordToggle ||
+			showClearButton ||
+			(Icon && iconPosition === 'right')
+		) {
+			endAdornment = (
+				<InputAdornment position="end">
+					{suffix && (
+						<span style={{ marginRight: '4px' }}>{suffix}</span>
+					)}
 					{showPasswordToggle && type === 'password' && (
-						<button
-							type="button"
-							className="input-toggle-password"
+						<IconButton
 							onClick={() =>
 								setIsPasswordVisible(!isPasswordVisible)
 							}
+							edge="end"
+							size="small"
+							tabIndex={-1}
 							aria-label={
 								isPasswordVisible
 									? 'Hide password'
 									: 'Show password'
 							}
-							tabIndex={-1}
 						>
-							{isPasswordVisible ? '👁️‍🗨️' : '👁️'}
-						</button>
+							{isPasswordVisible ? (
+								<VisibilityOff />
+							) : (
+								<Visibility />
+							)}
+						</IconButton>
 					)}
-
 					{showClearButton && (
-						<button
-							type="button"
-							className="input-clear-btn"
+						<IconButton
 							onClick={handleClear}
-							aria-label="Clear input"
+							edge="end"
+							size="small"
 							tabIndex={-1}
+							aria-label="Clear input"
 						>
-							✕
-						</button>
+							<Close />
+						</IconButton>
 					)}
+					{Icon && iconPosition === 'right' && <Icon />}
+				</InputAdornment>
+			);
+		}
 
-					{Icon && iconPosition === 'right' && (
-						<Icon
-							className="input-icon input-icon-right"
-							aria-hidden="true"
-						/>
-					)}
-				</div>
-
-				{/* Helper text, error, or success message */}
-				<div className="input-feedback">
-					{(error || validationError) && touched && (
-						<span className="input-error-message" role="alert">
-							{errorMessage || error || validationError}
-						</span>
-					)}
-					{successMessage &&
-						touched &&
-						!error &&
-						!validationError && (
-							<span className="input-success-message">
-								✓ {successMessage}
-							</span>
-						)}
-					{hint && !error && !validationError && (
-						<span className="input-hint">{hint}</span>
-					)}
-				</div>
-			</div>
+		return (
+			<Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+				<TextField
+					inputRef={ref}
+					id={name}
+					name={name}
+					type={effectiveType}
+					placeholder={placeholder}
+					value={displayValue}
+					onChange={handleChange}
+					onBlur={handleBlur}
+					onFocus={handleFocus}
+					disabled={disabled}
+					inputProps={{
+						readOnly: readOnly,
+						maxLength: maxLength,
+						minLength: minLength,
+						pattern: pattern,
+						'aria-label': ariaLabel || label,
+						'aria-describedby': ariaDescribedBy,
+						'aria-invalid': hasError,
+						'data-testid': testId,
+					}}
+					label={label}
+					required={required}
+					variant={variant}
+					size={size}
+					fullWidth={fullWidth}
+					error={hasError}
+					helperText={
+						helperText ||
+						(successMessage && touched ? `✓ ${successMessage}` : '')
+					}
+					startAdornment={startAdornment}
+					endAdornment={endAdornment}
+					{...props}
+				/>
+			</Box>
 		);
 	},
 );
@@ -319,6 +304,9 @@ Input.propTypes = {
 	ariaDescribedBy: PropTypes.string,
 	testId: PropTypes.string,
 	debounceDelay: PropTypes.number,
+	fullWidth: PropTypes.bool,
+	variant: PropTypes.oneOf(['outlined', 'filled', 'standard']),
+	size: PropTypes.oneOf(['small', 'medium']),
 };
 
 export default Input;

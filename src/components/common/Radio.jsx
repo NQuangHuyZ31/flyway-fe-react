@@ -1,9 +1,15 @@
 // src/components/common/Radio.jsx
 // Enhanced Radio component with group support
+// Converted to Material-UI
 
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
-import './Radio.css';
+import {
+	FormControlLabel,
+	Radio as MUIRadio,
+	FormHelperText,
+	Box,
+} from '@mui/material';
 
 const Radio = forwardRef(
 	(
@@ -22,39 +28,40 @@ const Radio = forwardRef(
 		},
 		ref,
 	) => {
-		const radioClasses = `
-			radio
-			${checked ? 'radio-checked' : ''}
-			${disabled ? 'radio-disabled' : ''}
-			${error ? 'radio-error' : ''}
-			${className}
-		`.trim();
-
 		const inputId = id || `${name}-${value}`;
 
 		return (
-			<div className={radioClasses}>
-				<input
-					ref={ref}
-					type="radio"
+			<Box>
+				<FormControlLabel
+					control={
+						<MUIRadio
+							inputRef={ref}
+							name={name}
+							value={value}
+							checked={checked}
+							onChange={onChange}
+							disabled={disabled}
+							inputProps={{
+								'aria-label': ariaLabel || label,
+								'data-testid': testId,
+							}}
+							sx={{
+								color: error ? 'error.main' : undefined,
+							}}
+						/>
+					}
+					label={label}
 					id={inputId}
-					name={name}
-					value={value}
-					checked={checked}
-					onChange={onChange}
-					disabled={disabled}
-					aria-label={ariaLabel || label}
-					data-testid={testId}
-					className="radio-input"
+					sx={{
+						opacity: disabled ? 0.6 : 1,
+					}}
 				/>
-				<label htmlFor={inputId} className="radio-label">
-					<span className="radio-icon">
-						{checked && <span className="radio-icon-inner" />}
-					</span>
-					{label && <span className="radio-text">{label}</span>}
-				</label>
-				{error && <span className="radio-error-message">{error}</span>}
-			</div>
+				{error && (
+					<FormHelperText error sx={{ marginLeft: '32px' }}>
+						{error}
+					</FormHelperText>
+				)}
+			</Box>
 		);
 	},
 );

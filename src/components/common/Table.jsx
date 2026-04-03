@@ -1,9 +1,27 @@
 // src/components/common/Table.jsx
 // Advanced Data Table component with sorting, filtering, pagination
+// Converted to Material-UI
 
 import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import './Table.css';
+import {
+	Table as MUITable,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
+	TableSortLabel,
+	Checkbox,
+	Box,
+	TablePagination,
+	CircularProgress,
+	Typography,
+	IconButton,
+	Menu,
+	MenuItem,
+} from '@mui/material';
+import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 
 const Table = ({
 	columns,
@@ -22,8 +40,10 @@ const Table = ({
 		key: null,
 		direction: 'asc',
 	});
-	const [currentPage, setCurrentPage] = useState(1);
+	const [currentPage, setCurrentPage] = useState(0);
 	const [selectedRows, setSelectedRows] = useState(new Set());
+	const [anchorEl, setAnchorEl] = useState(null);
+	const [selectedRowForMenu, setSelectedRowForMenu] = useState(null);
 
 	// Sort data
 	const sortedData = useMemo(() => {
@@ -45,7 +65,7 @@ const Table = ({
 	const paginatedData = useMemo(() => {
 		if (!pagination) return sortedData;
 
-		const startIdx = (currentPage - 1) * rowsPerPage;
+		const startIdx = currentPage * rowsPerPage;
 		return sortedData.slice(startIdx, startIdx + rowsPerPage);
 	}, [sortedData, currentPage, rowsPerPage, pagination]);
 
@@ -83,21 +103,218 @@ const Table = ({
 		onRowSelect?.(Array.from(newSelected).map((i) => paginatedData[i]));
 	};
 
+	const handleMenuOpen = (e, row) => {
+		setAnchorEl(e.currentTarget);
+		setSelectedRowForMenu(row);
+	};
+
+	const handleMenuClose = () => {
+		setAnchorEl(null);
+		setSelectedRowForMenu(null);
+	};
+
+	const handleActionClick = () => {
+		if (selectedRowForMenu) {
+			onActionClick?.(selectedRowForMenu);
+		}
+		handleMenuClose();
+	};
+
 	if (loading) {
-		return <div className="table-loading">Loading...</div>;
+		return (
+			<Box
+				sx={{
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+					minHeight: '200px',
+				}}
+			>
+				<CircularProgress />
+			</Box>
+		);
 	}
 
 	if (sortedData.length === 0) {
-		return <div className="table-empty">{emptyMessage}</div>;
+		return (
+			<Box
+				sx={{
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+					minHeight: '200px',
+					textAlign: 'center',
+				}}
+			>
+				<Typography color="textSecondary">{emptyMessage}</Typography>
+			</Box>
+		);
 	}
 
 	return (
-		<div className={`table-container ${className}`}>
-			<table className="table">
-				<thead>
-					<tr>
-						{selectable && (
-							<th className="table-checkbox-col">
+		<Box>
+			<TableContainer>
+				<MUITable>
+					<TableHead>
+						<TableRow sx={{ backgroundColor: 'action.hover' }}>
+							{selectable && (
+								<TableCell padding="checkbox">
+									<Checkbox
+										onChange={handleSelectAll}
+										checked={
+											selectedRows.size ===
+												paginatedData.length &&
+											paginatedData.length > 0
+										}
+										indeterminate={
+											selectedRows.size > 0 &&
+											selectedRows.size <
+												paginatedData.length
+										}
+									/>
+								</TableCell>
+							)}
+							{columns.map((col) => (
+								<TableCell
+									key={col.key}
+									align={col.align || 'left'}
+									sortDirection={
+										sortConfig.key === col.key
+											? sortConfig.direction
+											: false
+									}
+								>
+									{sortable && col.sortable !== false ? (
+										<TableSortLabel
+											active={
+												sortConfig.key === col.key
+											}
+											direction={
+												sortConfig.key === col.key
+													? sortConfig.direction
+													: 'asc'
+											}
+											onClick={() =>
+												handleSort(col.key)
+											}
+										>
+											{col.label}
+										</TableSortLabel>
+									) : (
+										col.label
+									)}
+								</TableCell>
+							))}
+							{onActionClick && (
+								<TableCell align="center">Actions</TableCell>
+							)}
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{paginatedData.map((row, rowIdx) => (
+							<TableRow
+								key={rowIdx}
+								selected={
+									selectable && selectedRows.has(rowIdx)
+								}
+								hover
+							>
+								{selectable && (
+									<TableCell padding="checkbox">
+										<Checkbox
+											checked={selectedRows.has(
+												rowIdx,
+											)}
+											onChange={() =>
+												handleSelectRow(rowIdx)
+											}
+										/>
+									</TableCell>
+								)}
+								{columns.map((col) => (
+									<TableCell
+										key={`${rowIdx}-${col.key}`}
+										align={col.align || 'left'}
+									>
+										{col.render
+											? col.render(
+													row[col.key],
+													row,
+											  )
+											: row[col.key]}
+									</TableCell>
+								))}
+								{onActionClick && (
+									<TableCell align="center">
+										<IconButton
+											size="small"
+											onClick={(e) =>
+												handleMenuOpen(e, row)
+											}
+										>
+											<MoreVertIcon fontSize="small" />
+										</IconButton>
+										<Menu
+											anchorEl={anchorEl}
+											open={Boolean(anchorEl)}
+											onClose={handleMenuClose}
+										>
+											<MenuItem
+												onClick={
+													handleActionClick
+												}
+											>
+												Action
+											</MenuItem>
+										</Menu>
+									</TableCell>
+								)}
+							</TableRow>
+						))}
+					</TableBody>
+				</MUITable>
+			</TableContainer>
+
+			{pagination && totalPages > 1 && (
+				<TablePagination
+					component="div"
+					count={sortedData.length}
+					page={currentPage}
+					onPageChange={(e, newPage) => setCurrentPage(newPage)}
+					rowsPerPage={rowsPerPage}
+					onRowsPerPageChange={(e) => {
+						// Keep default behavior, not implementing full rowsPerPage change
+					}}
+					rowsPerPageOptions={[rowsPerPage]}
+				/>
+			)}
+		</Box>
+	);
+};
+
+Table.propTypes = {
+	columns: PropTypes.arrayOf(
+		PropTypes.shape({
+			key: PropTypes.string.isRequired,
+			label: PropTypes.string.isRequired,
+			sortable: PropTypes.bool,
+			align: PropTypes.oneOf(['left', 'center', 'right']),
+			render: PropTypes.func,
+		}),
+	).isRequired,
+	data: PropTypes.array.isRequired,
+	loading: PropTypes.bool,
+	sortable: PropTypes.bool,
+	selectable: PropTypes.bool,
+	pagination: PropTypes.bool,
+	rowsPerPage: PropTypes.number,
+	onRowSelect: PropTypes.func,
+	onActionClick: PropTypes.func,
+	className: PropTypes.string,
+	emptyMessage: PropTypes.string,
+};
+
+export default Table;
 								<input
 									type="checkbox"
 									onChange={handleSelectAll}

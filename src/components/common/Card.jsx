@@ -1,9 +1,19 @@
 // src/components/common/Card.jsx
 // Reusable Card component with multiple variants
+// Converted to Material-UI
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import './Card.css';
+import {
+	Card as MUICard,
+	CardHeader,
+	CardContent,
+	CardActions,
+	CardMedia,
+	Box,
+	Chip,
+	Typography,
+} from '@mui/material';
 
 const Card = ({
 	children,
@@ -18,42 +28,64 @@ const Card = ({
 	actions,
 	status,
 }) => {
-	const cardClasses = `
-    card
-    ${hoverable ? 'card-hoverable' : ''}
-    ${clickable ? 'card-clickable' : ''}
-    ${noPadding ? 'card-no-padding' : ''}
-    ${className}
-  `.trim();
+	const cardSx = {
+		cursor: clickable ? 'pointer' : 'default',
+		transition: hoverable ? 'all 0.3s ease' : 'none',
+		'&:hover': hoverable
+			? {
+					boxShadow: 3,
+					transform: 'translateY(-2px)',
+			  }
+			: {},
+	};
+
+	const statusColorMap = {
+		success: 'success',
+		warning: 'warning',
+		danger: 'error',
+		info: 'info',
+	};
 
 	return (
-		<div
-			className={cardClasses}
+		<MUICard
+			sx={cardSx}
 			onClick={clickable ? onClick : undefined}
 			role={clickable ? 'button' : 'article'}
 			tabIndex={clickable ? 0 : -1}
 		>
 			{(title || subtitle || actions || status) && (
-				<div className="card-header">
-					<div className="card-header-content">
-						{title && <h3 className="card-title">{title}</h3>}
-						{subtitle && (
-							<p className="card-subtitle">{subtitle}</p>
-						)}
-					</div>
-					{status && (
-						<span className={`card-status card-status-${status}`}>
-							{status}
-						</span>
-					)}
-					{actions && <div className="card-actions">{actions}</div>}
-				</div>
+				<CardHeader
+					title={title}
+					subheader={subtitle}
+					action={
+						status ? (
+							<Chip
+								label={status}
+								color={statusColorMap[status] || 'default'}
+								size="small"
+								variant="outlined"
+							/>
+						) : (
+							actions
+						)
+					}
+					sx={{
+						'& .MuiCardHeader-action': {
+							marginTop: 0,
+							marginRight: 0,
+						},
+					}}
+				/>
 			)}
 
-			<div className="card-body">{children}</div>
+			<CardContent sx={!noPadding ? {} : { padding: 0 }}>
+				{children}
+			</CardContent>
 
-			{footer && <div className="card-footer">{footer}</div>}
-		</div>
+			{footer && (
+				<CardActions sx={{ padding: '16px' }}>{footer}</CardActions>
+			)}
+		</MUICard>
 	);
 };
 

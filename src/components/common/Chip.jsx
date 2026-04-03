@@ -1,9 +1,10 @@
 // src/components/common/Chip.jsx
 // Tag/Chip component for displaying labels
+// Converted to Material-UI
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import './Chip.css';
+import { Chip as MUIChip, Box } from '@mui/material';
 
 const Chip = ({
 	label,
@@ -21,44 +22,45 @@ const Chip = ({
 	href,
 	...props
 }) => {
-	const chipClasses = `
-		chip
-		chip-${variant}
-		chip-${color}
-		chip-${size}
-		${disabled ? 'chip-disabled' : ''}
-		${removable ? 'chip-removable' : ''}
-		${className}
-	`.trim();
+	// Map custom variant to MUI variant
+	const variantMap = {
+		default: 'filled',
+		outlined: 'outlined',
+		filled: 'filled',
+	};
 
-	const Component = as || (href ? 'a' : 'div');
-	const componentProps = {
-		className: chipClasses,
-		onClick: !disabled ? onClick : undefined,
-		disabled,
-		...(href && { href }),
-		'data-testid': testId,
-		...props,
+	// Map size
+	const sizeMap = {
+		sm: 'small',
+		md: 'medium',
+		lg: 'medium',
+	};
+
+	// Map custom color to MUI color
+	const colorMap = {
+		primary: 'primary',
+		secondary: 'secondary',
+		success: 'success',
+		danger: 'error',
+		warning: 'warning',
+		info: 'info',
 	};
 
 	return (
-		<Component {...componentProps}>
-			{Icon && <Icon className="chip-icon" aria-hidden="true" />}
-			<span className="chip-label">{label}</span>
-			{removable && (
-				<button
-					type="button"
-					className="chip-remove"
-					onClick={(e) => {
-						e.stopPropagation();
-						onRemove?.();
-					}}
-					aria-label={`Remove ${label}`}
-				>
-					✕
-				</button>
-			)}
-		</Component>
+		<MUIChip
+			label={label}
+			variant={variantMap[variant] || 'filled'}
+			color={colorMap[color] || 'primary'}
+			size={sizeMap[size] || 'medium'}
+			icon={Icon ? <Icon /> : undefined}
+			onDelete={removable ? onRemove : undefined}
+			onClick={!disabled ? onClick : undefined}
+			disabled={disabled}
+			component={href ? 'a' : undefined}
+			href={href}
+			data-testid={testId}
+			{...props}
+		/>
 	);
 };
 

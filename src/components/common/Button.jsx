@@ -1,9 +1,10 @@
 // src/components/common/Button.jsx
 // Enhanced Button component with multiple variants, sizes, and accessibility
+// Converted to Material-UI
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import './Button.css';
+import { Button as MUIButton, CircularProgress, Box } from '@mui/material';
 
 const Button = ({
 	children,
@@ -30,29 +31,32 @@ const Button = ({
 	asLink = false,
 	...props
 }) => {
-	const buttonClasses = useMemo(() => {
-		return `
-			btn
-			btn-${variant}
-			btn-${size}
-			${fullWidth || block ? 'btn-full-width' : ''}
-			${disabled ? 'btn-disabled' : ''}
-			${loading ? 'btn-loading' : ''}
-			${rounded ? 'btn-rounded' : ''}
-			${shadow ? 'btn-shadow' : ''}
-			${className}
-		`.trim();
-	}, [
-		variant,
-		size,
-		fullWidth,
-		block,
-		disabled,
-		loading,
-		rounded,
-		shadow,
-		className,
-	]);
+	// Map variant to MUI variant and color
+	const variantMap = {
+		primary: { muiVariant: 'contained', color: 'primary' },
+		secondary: { muiVariant: 'contained', color: 'secondary' },
+		success: { muiVariant: 'contained', color: 'success' },
+		danger: { muiVariant: 'contained', color: 'error' },
+		warning: { muiVariant: 'contained', color: 'warning' },
+		info: { muiVariant: 'contained', color: 'info' },
+		light: { muiVariant: 'outlined', color: 'inherit' },
+		dark: { muiVariant: 'contained', color: 'inherit' },
+		outline: { muiVariant: 'outlined', color: 'primary' },
+		ghost: { muiVariant: 'text', color: 'primary' },
+	};
+
+	const { muiVariant, color } = variantMap[variant] || variantMap.primary;
+
+	// Map size to MUI size
+	const sizeMap = {
+		xs: 'small',
+		sm: 'small',
+		md: 'medium',
+		lg: 'large',
+		xl: 'large',
+	};
+
+	const muiSize = sizeMap[size] || 'medium';
 
 	const handleClick = (e) => {
 		if (!disabled && !loading && onClick) {
@@ -60,61 +64,69 @@ const Button = ({
 		}
 	};
 
-	const commonProps = {
-		className: buttonClasses,
-		disabled: disabled || loading,
-		onClick: handleClick,
-		'aria-label': ariaLabel,
-		'aria-describedby': ariaDescribedBy,
-		'aria-busy': loading,
-		'data-testid': testId,
-		...(tooltip && { title: tooltip }),
-		...props,
+	const buttonSx = {
+		borderRadius: rounded ? '50px' : undefined,
+		boxShadow: shadow ? 2 : undefined,
+		width: fullWidth || block ? '100%' : undefined,
+		textTransform: 'none',
 	};
+
+	const startIcon = Icon && iconPosition === 'left' ? <Icon /> : undefined;
+	const endIcon = Icon && iconPosition === 'right' ? <Icon /> : undefined;
 
 	// Render as link if asLink prop is true
 	if (asLink && href) {
 		return (
-			<a
+			<MUIButton
+				component="a"
 				href={href}
 				target={target}
 				rel={
-					rel || (target === '_blank' ? 'noopener noreferrer' : null)
+					rel ||
+					(target === '_blank' ? 'noopener noreferrer' : undefined)
 				}
-				{...commonProps}
+				variant={muiVariant}
+				color={color}
+				size={muiSize}
+				disabled={disabled || loading}
+				fullWidth={fullWidth || block}
+				startIcon={loading ? <CircularProgress size={20} /> : startIcon}
+				endIcon={endIcon}
+				onClick={handleClick}
+				aria-label={ariaLabel}
+				aria-describedby={ariaDescribedBy}
+				aria-busy={loading}
+				data-testid={testId}
+				title={tooltip}
+				sx={buttonSx}
+				{...props}
 			>
-				{loading && <span className="btn-spinner" />}
-				{Icon && iconPosition === 'left' && (
-					<Icon
-						className="btn-icon btn-icon-left"
-						aria-hidden="true"
-					/>
-				)}
-				<span className="btn-text">{children}</span>
-				{Icon && iconPosition === 'right' && (
-					<Icon
-						className="btn-icon btn-icon-right"
-						aria-hidden="true"
-					/>
-				)}
-			</a>
+				{children}
+			</MUIButton>
 		);
 	}
 
 	return (
-		<button type={type} {...commonProps}>
-			{loading && <span className="btn-spinner" aria-hidden="true" />}
-
-			{Icon && iconPosition === 'left' && (
-				<Icon className="btn-icon btn-icon-left" aria-hidden="true" />
-			)}
-
-			<span className="btn-text">{children}</span>
-
-			{Icon && iconPosition === 'right' && (
-				<Icon className="btn-icon btn-icon-right" aria-hidden="true" />
-			)}
-		</button>
+		<MUIButton
+			type={type}
+			variant={muiVariant}
+			color={color}
+			size={muiSize}
+			disabled={disabled || loading}
+			fullWidth={fullWidth || block}
+			startIcon={loading ? <CircularProgress size={20} /> : startIcon}
+			endIcon={endIcon}
+			onClick={handleClick}
+			aria-label={ariaLabel}
+			aria-describedby={ariaDescribedBy}
+			aria-busy={loading}
+			data-testid={testId}
+			title={tooltip}
+			sx={buttonSx}
+			{...props}
+		>
+			{children}
+		</MUIButton>
 	);
 };
 
@@ -153,4 +165,5 @@ Button.propTypes = {
 	target: PropTypes.string,
 	rel: PropTypes.string,
 };
+
 export default Button;

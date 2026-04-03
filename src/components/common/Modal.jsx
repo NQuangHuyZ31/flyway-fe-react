@@ -1,9 +1,20 @@
 // src/components/common/Modal.jsx
 // Enhanced Modal/Dialog component with animations and accessibility
+// Converted to Material-UI
 
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import './Modal.css';
+import {
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	Button as MUIButton,
+	IconButton,
+	Box,
+	CircularProgress,
+} from '@mui/material';
+import { Close } from '@mui/icons-material';
 
 const Modal = ({
 	isOpen,
@@ -30,140 +41,147 @@ const Modal = ({
 	subtitle,
 	extraActions,
 }) => {
-	useEffect(() => {
-		if (isOpen) {
-			document.body.style.overflow = 'hidden';
-		}
-		return () => {
-			document.body.style.overflow = 'auto';
-		};
-	}, [isOpen]);
+	// Map size to MUI maxWidth
+	const sizeMap = {
+		sm: 'xs',
+		md: 'sm',
+		lg: 'md',
+		xl: 'lg',
+		full: 'xl',
+	};
 
-	// Handle Escape key
-	useEffect(() => {
-		if (!isOpen || !closeOnEscape) return;
-
-		const handleKeyDown = (e) => {
-			if (e.key === 'Escape') {
-				handleClose();
-			}
-		};
-
-		document.addEventListener('keydown', handleKeyDown);
-		return () => document.removeEventListener('keydown', handleKeyDown);
-	}, [isOpen, closeOnEscape]);
+	const maxWidth = sizeMap[size] || 'sm';
 
 	const handleClose = () => {
 		onClose?.();
 		onAfterClose?.();
 	};
 
-	const handleBackdropClick = (e) => {
-		if (backdrop && closeOnBackdropClick && e.target === e.currentTarget) {
-			handleClose();
-		}
-	};
-
-	if (!isOpen) return null;
-
-	const overlayClasses = `modal-overlay modal-animation-${animation}`.trim();
-	const modalClasses = `
-		modal 
-		modal-${size} 
-		${centered ? 'modal-centered' : ''}
-		${scrollable ? 'modal-scrollable' : ''}
-		${className}
-	`.trim();
-
 	return (
-		<div
-			className={overlayClasses}
-			onClick={handleBackdropClick}
+		<Dialog
+			open={isOpen}
+			onClose={handleClose}
+			maxWidth={maxWidth}
+			fullWidth
 			data-testid={testId}
-			role="presentation"
+			onBackdropClick={closeOnBackdropClick ? handleClose : undefined}
+			disableEscapeKeyDown={!closeOnEscape}
+			PaperProps={{
+				sx: {
+					borderRadius: '8px',
+				},
+			}}
+			sx={{
+				'& .MuiDialog-paper': {
+					margin: centered ? '32px' : '16px',
+					maxHeight: scrollable ? '90vh' : 'auto',
+				},
+			}}
 		>
-			<div
-				className={modalClasses}
-				onClick={(e) => e.stopPropagation()}
-				role="dialog"
-				aria-modal="true"
-				aria-labelledby="modal-title"
-				aria-describedby="modal-description"
+			{/* Header */}
+			<DialogTitle
+				sx={{
+					display: 'flex',
+					alignItems: 'flex-start',
+					justifyContent: 'space-between',
+					gap: '16px',
+					padding: '24px',
+					borderBottom: '1px solid',
+					borderColor: 'divider',
+				}}
 			>
-				{/* Header */}
-				<div className="modal-header">
-					<div className="modal-header-content">
-						{HeaderIcon && (
-							<HeaderIcon
-								className="modal-header-icon"
-								aria-hidden="true"
-							/>
-						)}
-						<div className="modal-header-text">
-							<h2 className="modal-title" id="modal-title">
-								{title}
-							</h2>
-							{subtitle && (
-								<p
-									className="modal-subtitle"
-									id="modal-description"
-								>
-									{subtitle}
-								</p>
-							)}
-						</div>
-					</div>
-					<button
-						className="modal-close"
-						onClick={handleClose}
-						aria-label="Close modal"
-						type="button"
-					>
-						<span aria-hidden="true">✕</span>
-					</button>
-				</div>
-
-				{/* Body */}
-				<div className="modal-body">{children}</div>
-
-				{/* Footer */}
-				{footer && (
-					<div className="modal-footer">
-						<div className="modal-footer-actions">
-							<button
-								className="modal-btn-cancel"
-								onClick={handleClose}
-								disabled={loading}
-								type="button"
+				<Box
+					sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}
+				>
+					{HeaderIcon && (
+						<HeaderIcon
+							sx={{ fontSize: '24px', color: 'primary.main' }}
+						/>
+					)}
+					<Box>
+						<Box
+							component="h2"
+							id="modal-title"
+							sx={{
+								margin: 0,
+								fontWeight: 600,
+								fontSize: '1.25rem',
+							}}
+						>
+							{title}
+						</Box>
+						{subtitle && (
+							<Box
+								id="modal-description"
+								sx={{
+									margin: '4px 0 0 0',
+									fontSize: '0.875rem',
+									color: 'text.secondary',
+								}}
 							>
-								{cancelText}
-							</button>
-							{extraActions}
-							{onConfirm && (
-								<button
-									className={`modal-btn-confirm ${
-										isDanger ? 'modal-btn-danger' : ''
-									}`}
-									onClick={onConfirm}
-									disabled={loading}
-									type="button"
-									aria-busy={loading}
-								>
-									{loading ? (
-										<>
-											<span className="modal-spinner" />
-											{confirmText}
-										</>
-									) : (
-										confirmText
-									)}
-								</button>
-							)}
-						</div>
-					</div>
-				)}
-			</div>
-		</div>
+								{subtitle}
+							</Box>
+						)}
+					</Box>
+				</Box>
+				<IconButton
+					onClick={handleClose}
+					size="small"
+					aria-label="Close modal"
+					sx={{ marginTop: '-8px', marginRight: '-8px' }}
+				>
+					<Close />
+				</IconButton>
+			</DialogTitle>
+
+			{/* Body */}
+			<DialogContent
+				sx={{
+					padding: '24px',
+					maxHeight: scrollable ? 'calc(90vh - 140px)' : 'auto',
+					overflowY: scrollable ? 'auto' : 'visible',
+				}}
+			>
+				{children}
+			</DialogContent>
+
+			{/* Footer */}
+			{footer && (
+				<DialogActions
+					sx={{
+						padding: '16px 24px',
+						borderTop: '1px solid',
+						borderColor: 'divider',
+						gap: '8px',
+					}}
+				>
+					<MUIButton
+						onClick={handleClose}
+						disabled={loading}
+						variant="outlined"
+						color="inherit"
+					>
+						{cancelText}
+					</MUIButton>
+					{extraActions}
+					{onConfirm && (
+						<MUIButton
+							onClick={onConfirm}
+							disabled={loading}
+							variant="contained"
+							color={isDanger ? 'error' : 'primary'}
+							startIcon={
+								loading ? (
+									<CircularProgress size={20} />
+								) : undefined
+							}
+						>
+							{confirmText}
+						</MUIButton>
+					)}
+				</DialogActions>
+			)}
+		</Dialog>
 	);
 };
 

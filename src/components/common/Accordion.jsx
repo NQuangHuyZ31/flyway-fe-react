@@ -1,9 +1,16 @@
 // src/components/common/Accordion.jsx
 // Advanced Accordion component with smooth animations
+// Converted to Material-UI
 
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import './Accordion.css';
+import {
+	Accordion as MUIAccordion,
+	AccordionSummary,
+	AccordionDetails,
+	Box,
+} from '@mui/material';
+import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 
 const Accordion = ({
 	items,
@@ -13,89 +20,71 @@ const Accordion = ({
 	className = '',
 	variant = 'default',
 }) => {
-	const [openIndexes, setOpenIndexes] = useState(
-		defaultOpenIndex !== null ? [defaultOpenIndex] : [],
+	const [expanded, setExpanded] = useState(
+		defaultOpenIndex !== null ? `panel${defaultOpenIndex}` : false,
 	);
 
-	const toggleItem = useCallback(
-		(index) => {
-			let newIndexes;
+	const handleChange = useCallback(
+		(panel) => (event, isExpanded) => {
+			const index = parseInt(panel.replace('panel', ''));
 
-			if (allowMultiple) {
-				newIndexes = openIndexes.includes(index)
-					? openIndexes.filter((i) => i !== index)
-					: [...openIndexes, index];
+			if (!allowMultiple) {
+				setExpanded(isExpanded ? panel : false);
 			} else {
-				newIndexes = openIndexes.includes(index) ? [] : [index];
+				setExpanded(isExpanded ? panel : false);
 			}
 
-			setOpenIndexes(newIndexes);
-			onChange?.(index, newIndexes);
+			onChange?.(index, isExpanded ? [index] : []);
 		},
-		[openIndexes, allowMultiple, onChange],
+		[allowMultiple, onChange],
 	);
 
 	return (
-		<div className={`accordion accordion-${variant} ${className}`.trim()}>
-			{items.map((item, index) => {
-				const isOpen = openIndexes.includes(index);
-
-				return (
-					<div
-						key={item.id || index}
-						className={`accordion-item ${
-							isOpen ? 'accordion-item-open' : ''
-						}`}
+		<Box className={className}>
+			{items.map((item, index) => (
+				<MUIAccordion
+					key={item.id || index}
+					expanded={expanded === `panel${index}`}
+					onChange={handleChange(`panel${index}`)}
+				>
+					<AccordionSummary
+						expandIcon={<ExpandMoreIcon />}
+						aria-controls={`panel${index}-content`}
+						id={`panel${index}-header`}
 					>
-						<button
-							className="accordion-header"
-							onClick={() => toggleItem(index)}
-							aria-expanded={isOpen}
-							aria-controls={`accordion-panel-${index}`}
-							type="button"
-						>
-							<span className="accordion-header-content">
-								{item.icon && (
-									<span
-										className="accordion-icon-left"
-										aria-hidden="true"
-									>
-										{item.icon}
-									</span>
-								)}
-								<span className="accordion-title">
-									{item.title}
-								</span>
-								{item.subtitle && (
-									<span className="accordion-subtitle">
-										{item.subtitle}
-									</span>
-								)}
-							</span>
-							<span
-								className="accordion-toggle-icon"
-								aria-hidden="true"
+						{item.icon && (
+							<Box
+								sx={{
+									marginRight: '12px',
+									display: 'flex',
+									alignItems: 'center',
+								}}
 							>
-								▼
-							</span>
-						</button>
-
-						<div
-							id={`accordion-panel-${index}`}
-							className="accordion-panel"
-							role="region"
-							aria-labelledby={`accordion-header-${index}`}
-						>
-							<div className="accordion-panel-content">
-								{typeof item.content === 'function'
-									? item.content()
-									: item.content}
-							</div>
-						</div>
-					</div>
-				);
-			})}
-		</div>
+								{item.icon}
+							</Box>
+						)}
+						<Box>
+							<Box sx={{ fontWeight: 600 }}>{item.title}</Box>
+							{item.subtitle && (
+								<Box
+									sx={{
+										fontSize: '0.875rem',
+										color: 'text.secondary',
+									}}
+								>
+									{item.subtitle}
+								</Box>
+							)}
+						</Box>
+					</AccordionSummary>
+					<AccordionDetails>
+						{typeof item.content === 'function'
+							? item.content()
+							: item.content}
+					</AccordionDetails>
+				</MUIAccordion>
+			))}
+		</Box>
 	);
 };
 

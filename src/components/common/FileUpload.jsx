@@ -1,9 +1,25 @@
 // src/components/common/FileUpload.jsx
 // Advanced file upload component with drag-drop
+// Converted to Material-UI
 
 import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import './FileUpload.css';
+import {
+	Box,
+	Button,
+	List,
+	ListItem,
+	ListItemText,
+	IconButton,
+	FormHelperText,
+	Typography,
+	Paper,
+} from '@mui/material';
+import {
+	CloudUpload as CloudUploadIcon,
+	Close as CloseIcon,
+	InsertDriveFile as FileIcon,
+} from '@mui/icons-material';
 
 const FileUpload = ({
 	name,
@@ -34,22 +50,20 @@ const FileUpload = ({
 		const newFiles = Array.from(fileList);
 		const errors = [];
 
-		// Check max files
 		if (maxFiles && files.length + newFiles.length > maxFiles) {
-			errors.push(`Maximum ${maxFiles} files allowed`);
-			onError?.(`Maximum ${maxFiles} files allowed`);
-			setErrorMessage(`Maximum ${maxFiles} files allowed`);
+			const msg = `Maximum ${maxFiles} files allowed`;
+			errors.push(msg);
+			onError?.(msg);
+			setErrorMessage(msg);
 			return;
 		}
 
 		for (const file of newFiles) {
-			// Check file size
 			if (maxSize && file.size > maxSize) {
 				errors.push(`${file.name} exceeds maximum size`);
 				continue;
 			}
 
-			// Check file format
 			if (formats.length > 0) {
 				const ext = file.name.split('.').pop().toLowerCase();
 				if (!formats.includes(ext)) {
@@ -58,7 +72,6 @@ const FileUpload = ({
 				}
 			}
 
-			// Add file
 			setFiles((prev) => [
 				...prev,
 				{
@@ -77,7 +90,6 @@ const FileUpload = ({
 			setErrorMessage(null);
 		}
 
-		// Trigger onChange
 		onChange?.(newFiles);
 	};
 
@@ -97,9 +109,7 @@ const FileUpload = ({
 		setDragActive(false);
 
 		if (disabled) return;
-
-		const { files: droppedFiles } = e.dataTransfer;
-		validateFiles(droppedFiles);
+		validateFiles(e.dataTransfer.files);
 	};
 
 	const handleChange = (e) => {
@@ -118,14 +128,6 @@ const FileUpload = ({
 		onChange?.(files.filter((f) => f.id !== id).map((f) => f.file));
 	};
 
-	const uploadClasses = `
-		file-upload
-		${dragActive ? 'file-upload-active' : ''}
-		${disabled ? 'file-upload-disabled' : ''}
-		${error || errorMessage ? 'file-upload-error' : ''}
-		${className}
-	`.trim();
-
 	const formatFileSize = (bytes) => {
 		if (bytes === 0) return '0 Bytes';
 		const k = 1024;
@@ -136,27 +138,50 @@ const FileUpload = ({
 		);
 	};
 
+	const hasError = error || errorMessage;
+
 	return (
-		<div className={uploadClasses}>
+		<Box className={className}>
 			{label && (
-				<label className="file-upload-label">
+				<Typography
+					variant="subtitle2"
+					sx={{ marginBottom: '8px', fontWeight: 600 }}
+				>
 					{label}
-					{required && (
-						<span className="file-upload-required">*</span>
-					)}
-				</label>
+					{required && <span style={{ color: 'red' }}>*</span>}
+				</Typography>
 			)}
 
 			{/* Dropzone */}
-			<div
-				className={`file-upload-zone ${
-					dragActive ? 'file-upload-zone-active' : ''
-				}`}
+			<Paper
 				onDragEnter={dragdrop ? handleDrag : undefined}
 				onDragLeave={dragdrop ? handleDrag : undefined}
 				onDragOver={dragdrop ? handleDrag : undefined}
 				onDrop={dragdrop ? handleDrop : undefined}
 				onClick={handleClick}
+				sx={{
+					padding: '32px 16px',
+					textAlign: 'center',
+					borderWidth: 2,
+					borderStyle: 'dashed',
+					borderColor: dragActive
+						? 'primary.main'
+						: hasError
+						? 'error.main'
+						: 'divider',
+					backgroundColor: dragActive
+						? 'action.hover'
+						: 'background.paper',
+					cursor: disabled ? 'not-allowed' : 'pointer',
+					opacity: disabled ? 0.6 : 1,
+					transition: 'all 0.3s ease',
+					'&:hover': {
+						backgroundColor: !disabled
+							? 'action.hover'
+							: 'background.paper',
+						borderColor: !disabled ? 'primary.main' : 'divider',
+					},
+				}}
 				role="button"
 				tabIndex={disabled ? -1 : 0}
 			>
@@ -169,60 +194,76 @@ const FileUpload = ({
 					multiple={multiple}
 					disabled={disabled}
 					data-testid={testId}
-					className="file-upload-input"
+					style={{ display: 'none' }}
 				/>
 
-				<div className="file-upload-content">
-					<div className="file-upload-icon">📁</div>
-					<p className="file-upload-text">
-						Click to upload or drag and drop
-					</p>
-					{formats.length > 0 && (
-						<p className="file-upload-formats">
-							Supported: {formats.join(', ').toUpperCase()}
-						</p>
-					)}
-				</div>
-			</div>
+				<CloudUploadIcon
+					sx={{
+						fontSize: '48px',
+						color: 'primary.main',
+						marginBottom: '16px',
+					}}
+				/>
+				<Typography variant="body1" gutterBottom>
+					Click to upload or drag and drop
+				</Typography>
+				{formats.length > 0 && (
+					<Typography variant="caption" color="text.secondary">
+						Supported: {formats.join(', ').toUpperCase()}
+					</Typography>
+				)}
+			</Paper>
 
 			{/* File list */}
 			{files.length > 0 && (
-				<ul className="file-upload-list">
+				<List
+					sx={{
+						marginTop: '16px',
+						border: '1px solid',
+						borderColor: 'divider',
+						borderRadius: '4px',
+					}}
+				>
 					{files.map((item) => (
-						<li key={item.id} className="file-upload-item">
-							<div className="file-upload-item-info">
-								<span className="file-upload-item-name">
-									{item.file.name}
-								</span>
-								{showSize && (
-									<span className="file-upload-item-size">
-										{formatFileSize(item.file.size)}
-									</span>
-								)}
-							</div>
-							<button
-								type="button"
-								className="file-upload-item-remove"
-								onClick={() => removeFile(item.id)}
-								aria-label={`Remove ${item.file.name}`}
-							>
-								✕
-							</button>
-						</li>
+						<ListItem
+							key={item.id}
+							secondaryAction={
+								<IconButton
+									edge="end"
+									size="small"
+									onClick={() => removeFile(item.id)}
+									aria-label={`Remove ${item.file.name}`}
+								>
+									<CloseIcon fontSize="small" />
+								</IconButton>
+							}
+						>
+							<FileIcon sx={{ marginRight: '12px' }} />
+							<ListItemText
+								primary={item.file.name}
+								secondary={
+									showSize
+										? formatFileSize(item.file.size)
+										: undefined
+								}
+							/>
+						</ListItem>
 					))}
-				</ul>
+				</List>
 			)}
 
 			{/* Feedback */}
 			{hint && !error && !errorMessage && (
-				<span className="file-upload-hint">{hint}</span>
+				<FormHelperText sx={{ marginTop: '8px' }}>
+					{hint}
+				</FormHelperText>
 			)}
 			{(error || errorMessage) && (
-				<span className="file-upload-error">
+				<FormHelperText error sx={{ marginTop: '8px' }}>
 					{error || errorMessage}
-				</span>
+				</FormHelperText>
 			)}
-		</div>
+		</Box>
 	);
 };
 

@@ -1,9 +1,15 @@
 // src/components/common/Stepper.jsx
-// Step indicator component for multi-step forms/processes
+// Step indicator component using Material-UI
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import './Stepper.css';
+import {
+	Stepper as MUIStepper,
+	Step,
+	StepLabel,
+	StepContent,
+	Box,
+} from '@mui/material';
 
 const Stepper = ({
 	steps,
@@ -17,86 +23,71 @@ const Stepper = ({
 	showNumbers = true,
 	className = '',
 	editable = false,
+	children,
 }) => {
-	const stepperClasses = `
-		stepper
-		stepper-${variant}
-		stepper-${orientation}
-		${className}
-	`.trim();
-
-	const getStepStatus = (index) => {
-		if (index < currentStep) return 'completed';
-		if (index === currentStep) return 'active';
-		return 'pending';
-	};
-
 	const handleStepClick = (index) => {
 		if (clickable && index !== currentStep) {
 			onStepClick?.(index);
 		}
 	};
 
+	const isStepSkipped = (index) => {
+		return completed.includes(index);
+	};
+
 	return (
-		<div className={stepperClasses}>
-			<div className="stepper-track">
+		<Box sx={{ width: '100%' }}>
+			<MUIStepper
+				activeStep={currentStep}
+				orientation={orientation}
+				nonLinear={clickable}
+			>
 				{steps.map((step, index) => {
-					const status = getStepStatus(index);
-					const isClickable = clickable && index !== currentStep;
-					const stepClasses = `
-						stepper-step
-						stepper-step-${status}
-						${isClickable ? 'stepper-step-clickable' : ''}
-						${editable && status === 'completed' ? 'stepper-step-editable' : ''}
-					`.trim();
+					const isCompleted = isStepSkipped(index);
+					const labelProps = {};
+					const stepProps = {};
+
+					if (isCompleted) {
+						stepProps.completed = true;
+						labelProps.completed = true;
+					}
 
 					return (
-						<React.Fragment key={step.id || index}>
-							{/* Step indicator */}
-							<div
-								className={stepClasses}
-								onClick={() => handleStepClick(index)}
-								role={isClickable ? 'button' : 'presentation'}
-								tabIndex={isClickable ? 0 : -1}
+						<Step
+							key={step.id || index}
+							{...stepProps}
+							onClick={() => handleStepClick(index)}
+							sx={{
+								cursor: clickable ? 'pointer' : 'default',
+							}}
+						>
+							<StepLabel
+								{...labelProps}
+								optional={
+									step.description ? (
+										<Box
+											sx={{
+												fontSize: '0.875rem',
+												color: 'text.secondary',
+											}}
+										>
+											{step.description}
+										</Box>
+									) : null
+								}
 							>
-								<div className="stepper-marker">
-									{status === 'completed' && !showNumbers ? (
-										<span className="stepper-icon">✓</span>
-									) : (
-										<span className="stepper-number">
-											{showNumbers ? index + 1 : ''}
-										</span>
-									)}
-								</div>
-
-								{showLabels && (
-									<div className="stepper-label">
-										<div className="stepper-title">
-											{step.label}
-										</div>
-										{step.description && (
-											<div className="stepper-description">
-												{step.description}
-											</div>
-										)}
-									</div>
-								)}
-							</div>
-
-							{/* Connector line */}
-							{index < steps.length - 1 && (
-								<div
-									className={`
-										stepper-connector
-										${index < currentStep ? 'stepper-connector-completed' : ''}
-									`.trim()}
-								/>
+								{showLabels ? step.label : ''}
+							</StepLabel>
+							{orientation === 'vertical' && (
+								<StepContent>
+									<Box sx={{ py: 2 }}>{children}</Box>
+								</StepContent>
 							)}
-						</React.Fragment>
+						</Step>
 					);
 				})}
-			</div>
-		</div>
+			</MUIStepper>
+		</Box>
 	);
 };
 
@@ -119,6 +110,7 @@ Stepper.propTypes = {
 	showNumbers: PropTypes.bool,
 	className: PropTypes.string,
 	editable: PropTypes.bool,
+	children: PropTypes.node,
 };
 
 export default Stepper;

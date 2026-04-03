@@ -1,9 +1,20 @@
 // src/components/common/MultiSelect.jsx
-// Enhanced multiple select component
+// Enhanced multiple select component using Material-UI
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import './MultiSelect.css';
+import {
+	Select,
+	MenuItem,
+	FormControl,
+	FormHelperText,
+	InputLabel,
+	Checkbox,
+	ListItemText,
+	Chip,
+	Box,
+	OutlinedInput,
+} from '@mui/material';
 
 const MultiSelect = ({
 	name,
@@ -28,268 +39,155 @@ const MultiSelect = ({
 	renderOption,
 	renderValue,
 	onCreateOption,
+	fullWidth = true,
 }) => {
-	const [isOpen, setIsOpen] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
-	const [selectedValues, setSelectedValues] = useState(value || []);
-	const wrapperRef = useRef(null);
-	const inputRef = useRef(null);
+	const selectedValues = Array.isArray(value) ? value : [];
 
-	useEffect(() => {
-		setSelectedValues(value || []);
-	}, [value]);
+	const handleSelect = (event) => {
+		const selectedValue = event.target.value;
+		const newValues = Array.isArray(selectedValue)
+			? selectedValue
+			: [selectedValue];
 
-	const filteredOptions = options.filter((opt) =>
-		opt.label.toLowerCase().includes(searchTerm.toLowerCase()),
-	);
+		// Check if maxSelected is exceeded
+		if (maxSelected && newValues.length > maxSelected) {
+			return;
+		}
 
+		onChange?.({
+			target: {
+				name,
+				value: newValues,
+			},
+		});
+	};
+
+	const hasError = (error || errorMessage) && touched;
 	const selectedOptions = options.filter((opt) =>
 		selectedValues.includes(opt.value),
 	);
 
-	const handleSelect = (option) => {
-		let newValues;
-
-		if (selectedValues.includes(option.value)) {
-			newValues = selectedValues.filter((v) => v !== option.value);
-		} else {
-			if (maxSelected && selectedValues.length >= maxSelected) {
-				return;
-			}
-			newValues = [...selectedValues, option.value];
-		}
-
-		setSelectedValues(newValues);
-		onChange?.({ target: { name, value: newValues } });
-		setSearchTerm('');
+	const handleDelete = (valueToDelete) => {
+		const newValues = selectedValues.filter((v) => v !== valueToDelete);
+		onChange?.({
+			target: {
+				name,
+				value: newValues,
+			},
+		});
 	};
-
-	const handleRemove = (value) => {
-		const newValues = selectedValues.filter((v) => v !== value);
-		setSelectedValues(newValues);
-		onChange?.({ target: { name, value: newValues } });
-	};
-
-	const handleClear = () => {
-		setSelectedValues([]);
-		onChange?.({ target: { name, value: [] } });
-		setSearchTerm('');
-	};
-
-	const handleCreateOption = () => {
-		if (!creatable || !searchTerm.trim()) return;
-
-		const newOption = {
-			label: searchTerm,
-			value: searchTerm.toLowerCase().replace(/\s+/g, '-'),
-		};
-
-		onCreateOption?.(newOption);
-		setSearchTerm('');
-	};
-
-	// Close on outside click
-	useEffect(() => {
-		const handleClickOutside = (event) => {
-			if (
-				wrapperRef.current &&
-				!wrapperRef.current.contains(event.target)
-			) {
-				setIsOpen(false);
-			}
-		};
-
-		document.addEventListener('mousedown', handleClickOutside);
-		return () =>
-			document.removeEventListener('mousedown', handleClickOutside);
-	}, []);
-
-	const multiSelectClasses = `
-		multi-select
-		${isOpen ? 'multi-select-open' : ''}
-		${disabled ? 'multi-select-disabled' : ''}
-		${(error || errorMessage) && touched ? 'multi-select-error' : ''}
-		${className}
-	`.trim();
 
 	return (
-		<div className={multiSelectClasses} ref={wrapperRef}>
-			{label && (
-				<label className="multi-select-label">
-					{label}
-					{required && (
-						<span className="multi-select-required">*</span>
-					)}
-				</label>
-			)}
-
-			<div className="multi-select-container">
-				<div
-					className="multi-select-input"
-					onClick={() => !disabled && setIsOpen(!isOpen)}
-				>
-					{selectedOptions.length > 0 ? (
-						<div className="multi-select-values">
-							{selectedOptions.map((opt) => (
-								<span
-									key={opt.value}
-									className="multi-select-tag"
-								>
-									{renderValue ? renderValue(opt) : opt.label}
-									{!disabled && (
-										<button
-											type="button"
-											className="multi-select-tag-remove"
-											onClick={(e) => {
-												e.stopPropagation();
-												handleRemove(opt.value);
-											}}
-										>
-											✕
-										</button>
-									)}
-								</span>
-							))}
-						</div>
-					) : (
-						<span className="multi-select-placeholder">
-							{placeholder}
-						</span>
-					)}
-
-					{clearable && selectedValues.length > 0 && !disabled && (
-						<button
-							type="button"
-							className="multi-select-clear"
-							onClick={(e) => {
-								e.stopPropagation();
-								handleClear();
-							}}
-							aria-label="Clear selection"
-						>
-							✕
-						</button>
-					)}
-
-					<span className="multi-select-toggle" aria-hidden="true">
-						▼
-					</span>
-				</div>
-
-				{/* Dropdown */}
-				{isOpen && (
-					<div className="multi-select-dropdown">
-						{searchable && (
-							<input
-								ref={inputRef}
-								type="text"
-								className="multi-select-search"
-								placeholder="Search..."
-								value={searchTerm}
-								onChange={(e) => setSearchTerm(e.target.value)}
-								onClick={(e) => e.stopPropagation()}
-							/>
-						)}
-
-						<ul className="multi-select-options">
-							{filteredOptions.length > 0 ? (
-								filteredOptions.map((opt) => (
-									<li
-										key={opt.value}
-										className={`
-											multi-select-option
-											${selectedValues.includes(opt.value) ? 'multi-select-option-selected' : ''}
-											${opt.disabled ? 'multi-select-option-disabled' : ''}
-										`.trim()}
-										onClick={() =>
-											!opt.disabled && handleSelect(opt)
-										}
-									>
-										<input
-											type="checkbox"
-											checked={selectedValues.includes(
-												opt.value,
-											)}
-											readOnly
-										/>
-										<span className="multi-select-option-label">
-											{renderOption
-												? renderOption(opt)
-												: opt.label}
-										</span>
-									</li>
-								))
-							) : (
-								<li className="multi-select-no-options">
-									{creatable && searchTerm ? (
-										<button
-											type="button"
-											className="multi-select-create"
-											onClick={handleCreateOption}
-										>
-											Create "{searchTerm}"
-										</button>
-									) : (
-										<span>No options found</span>
-									)}
-								</li>
-							)}
-						</ul>
-
-						{maxSelected && (
-							<div className="multi-select-info">
-								{selectedValues.length} / {maxSelected} selected
-							</div>
-						)}
-					</div>
+		<Box sx={{ width: fullWidth ? '100%' : 'auto' }}>
+			<FormControl
+				fullWidth={fullWidth}
+				error={hasError}
+				disabled={disabled}
+				size="small"
+			>
+				{label && (
+					<InputLabel
+						id={`${name}-label`}
+						required={required}
+						error={hasError}
+					>
+						{label}
+					</InputLabel>
 				)}
-			</div>
 
-			{/* Feedback */}
-			{hint && !error && !errorMessage && (
-				<span className="multi-select-hint">{hint}</span>
-			)}
-			{(error || errorMessage) && touched && (
-				<span className="multi-select-error">
-					{errorMessage || error}
-				</span>
-			)}
-		</div>
+				<Select
+					labelId={`${name}-label`}
+					id={name}
+					name={name}
+					multiple
+					value={selectedValues}
+					onChange={handleSelect}
+					onBlur={onBlur}
+					input={<OutlinedInput label={label} />}
+					renderValue={(selected) => (
+						<Box
+							sx={{
+								display: 'flex',
+								flexWrap: 'wrap',
+								gap: 0.5,
+							}}
+						>
+							{selected.map((val) => {
+								const option = options.find(
+									(opt) => opt.value === val,
+								);
+								return (
+									<Chip
+										key={val}
+										label={
+											renderValue
+												? renderValue(option)
+												: option?.label
+										}
+										onDelete={() => handleDelete(val)}
+										disabled={disabled}
+										size="small"
+									/>
+								);
+							})}
+						</Box>
+					)}
+					data-testid={testId}
+				>
+					{options.map((option) => (
+						<MenuItem
+							key={option.value}
+							value={option.value}
+							disabled={option.disabled || false}
+						>
+							<Checkbox
+								checked={selectedValues.includes(option.value)}
+							/>
+							<ListItemText
+								primary={
+									renderOption
+										? renderOption(option)
+										: option.label
+								}
+							/>
+						</MenuItem>
+					))}
+
+					{creatable && searchTerm && (
+						<MenuItem
+							onClick={() => {
+								const newOption = {
+									label: searchTerm,
+									value: searchTerm
+										.toLowerCase()
+										.replace(/\s+/g, '-'),
+								};
+								onCreateOption?.(newOption);
+								setSearchTerm('');
+							}}
+						>
+							Create "{searchTerm}"
+						</MenuItem>
+					)}
+				</Select>
+
+				{hasError ? (
+					<FormHelperText error>
+						{errorMessage || error}
+					</FormHelperText>
+				) : hint ? (
+					<FormHelperText>{hint}</FormHelperText>
+				) : null}
+
+				{maxSelected && selectedValues.length > 0 && (
+					<FormHelperText>
+						{selectedValues.length} / {maxSelected} selected
+					</FormHelperText>
+				)}
+			</FormControl>
+		</Box>
 	);
-};
-
-MultiSelect.propTypes = {
-	name: PropTypes.string.isRequired,
-	label: PropTypes.string,
-	options: PropTypes.arrayOf(
-		PropTypes.shape({
-			label: PropTypes.string.isRequired,
-			value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-				.isRequired,
-			disabled: PropTypes.bool,
-		}),
-	).isRequired,
-	value: PropTypes.arrayOf(
-		PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-	),
-	onChange: PropTypes.func,
-	onBlur: PropTypes.func,
-	placeholder: PropTypes.string,
-	disabled: PropTypes.bool,
-	required: PropTypes.bool,
-	error: PropTypes.string,
-	errorMessage: PropTypes.string,
-	touched: PropTypes.bool,
-	searchable: PropTypes.bool,
-	creatable: PropTypes.bool,
-	clearable: PropTypes.bool,
-	maxSelected: PropTypes.number,
-	hint: PropTypes.string,
-	className: PropTypes.string,
-	testId: PropTypes.string,
-	renderOption: PropTypes.func,
-	renderValue: PropTypes.func,
-	onCreateOption: PropTypes.func,
 };
 
 export default MultiSelect;

@@ -1,9 +1,10 @@
 // src/components/common/Progress.jsx
 // Progress bar component with multiple variants
+// Converted to Material-UI
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import './Progress.css';
+import { LinearProgress, Box, Typography, Stack } from '@mui/material';
 
 const Progress = ({
 	value = 0,
@@ -20,45 +21,86 @@ const Progress = ({
 }) => {
 	const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
-	const progressClasses = `
-		progress
-		progress-${size}
-		${className}
-	`.trim();
+	const variantMap = {
+		primary: 'info',
+		success: 'success',
+		danger: 'error',
+		warning: 'warning',
+		info: 'info',
+	};
 
-	const barClasses = `
-		progress-bar
-		progress-bar-${variant}
-		${striped ? 'progress-bar-striped' : ''}
-		${animated ? 'progress-bar-animated' : ''}
-	`.trim();
+	const sizeMap = {
+		sm: '4px',
+		md: '8px',
+		lg: '12px',
+	};
 
 	const displayLabel = formatLabel
 		? formatLabel(value, max, percentage)
-		: label || `${Math.round(percentage)}%`;
+		: `${Math.round(percentage)}%`;
 
 	return (
-		<div className={progressClasses} data-testid={testId}>
+		<Box className={className} data-testid={testId}>
 			{showValue && label && (
-				<span className="progress-label">{label}</span>
+				<Typography
+					variant="caption"
+					sx={{ marginBottom: '4px', display: 'block' }}
+				>
+					{label}
+				</Typography>
 			)}
 
-			<div className="progress-container">
-				<div
-					className={barClasses}
+			<Box sx={{ position: 'relative' }}>
+				<LinearProgress
+					variant="determinate"
+					value={percentage}
+					color={variantMap[variant] || 'primary'}
+					sx={{
+						height: sizeMap[size] || '8px',
+						borderRadius: '4px',
+						backgroundColor: 'action.disabledBackground',
+						'& .MuiLinearProgress-bar': {
+							borderRadius: '4px',
+							animation: animated
+								? 'pulse 1.5s ease-in-out infinite'
+								: 'none',
+							'@keyframes pulse': {
+								'0%': { opacity: 1 },
+								'50%': { opacity: 0.7 },
+								'100%': { opacity: 1 },
+							},
+							backgroundImage: striped
+								? 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.15) 10px, rgba(255, 255, 255, 0.15) 20px)'
+								: 'none',
+						},
+					}}
 					role="progressbar"
 					aria-valuenow={value}
 					aria-valuemin={0}
 					aria-valuemax={max}
 					aria-label={displayLabel}
-					style={{ width: `${percentage}%` }}
-				>
-					{showValue && displayLabel && (
-						<span className="progress-text">{displayLabel}</span>
-					)}
-				</div>
-			</div>
-		</div>
+				/>
+				{showValue && displayLabel && (
+					<Typography
+						variant="caption"
+						sx={{
+							position: 'absolute',
+							top: '50%',
+							left: '50%',
+							transform: 'translate(-50%, -50%)',
+							fontWeight: 600,
+							color: percentage > 50 ? 'white' : 'inherit',
+							textShadow:
+								percentage > 50
+									? '0 1px 2px rgba(0,0,0,0.2)'
+									: 'none',
+						}}
+					>
+						{displayLabel}
+					</Typography>
+				)}
+			</Box>
+		</Box>
 	);
 };
 

@@ -15,8 +15,7 @@ const ProtectedRoute = () => {
 		isInitialized,
 	});
 	// If not authenticated, redirect to login
-	if (!isInitialized)
-		return <LoadingSpinner loading={true} message="Đang tải....." />;
+	if (!isInitialized) return;
 
 	if (!isAuthenticated) return <Navigate to="/login" replace />;
 

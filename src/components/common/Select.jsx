@@ -1,9 +1,10 @@
 // src/components/common/Select.jsx
 // Reusable Select/Dropdown component
+// Converted to Material-UI
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import './Select.css';
+import { TextField, MenuItem, FormHelperText, Box } from '@mui/material';
 
 const Select = ({
 	label,
@@ -20,100 +21,75 @@ const Select = ({
 	multi = false,
 	className = '',
 	onBlur,
+	variant = 'outlined',
+	size = 'small',
+	fullWidth = true,
 }) => {
-	const [isOpen, setIsOpen] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
-	const wrapperRef = useRef(null);
 
-	const filteredOptions = options.filter((opt) =>
-		opt.label.toLowerCase().includes(searchTerm.toLowerCase()),
-	);
-
-	useEffect(() => {
-		const handleClickOutside = (event) => {
-			if (
-				wrapperRef.current &&
-				!wrapperRef.current.contains(event.target)
-			) {
-				setIsOpen(false);
-			}
-		};
-
-		document.addEventListener('mousedown', handleClickOutside);
-		return () =>
-			document.removeEventListener('mousedown', handleClickOutside);
-	}, []);
+	const filteredOptions = searchable
+		? options.filter((opt) =>
+				opt.label.toLowerCase().includes(searchTerm.toLowerCase()),
+		  )
+		: options;
 
 	const selectedOption = options.find((opt) => opt.value === value);
 
-	const handleSelect = (option) => {
-		onChange({ target: { name, value: option.value } });
-		setIsOpen(false);
+	const handleSelect = (optionValue) => {
+		onChange({ target: { name, value: optionValue } });
 		setSearchTerm('');
 	};
 
+	const hasError = error && touched;
+
 	return (
-		<div className="select-wrapper" ref={wrapperRef}>
-			{label && (
-				<label className="select-label">
-					{label}
-					{required && <span className="select-required">*</span>}
-				</label>
-			)}
-
-			<div
-				className={`select-input ${isOpen ? 'select-open' : ''} ${
-					error && touched ? 'select-error' : ''
-				}`.trim()}
-				onClick={() => !disabled && setIsOpen(!isOpen)}
+		<Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+			<TextField
+				select
+				name={name}
+				label={label}
+				value={value || ''}
+				onChange={(e) => handleSelect(e.target.value)}
+				onBlur={onBlur}
+				disabled={disabled}
+				required={required}
+				variant={variant}
+				size={size}
+				fullWidth={fullWidth}
+				error={hasError}
+				helperText={hasError ? error : ''}
+				SelectProps={{
+					MenuProps: {
+						PaperProps: {
+							sx: {
+								maxHeight: '300px',
+							},
+						},
+					},
+				}}
+				sx={{
+					'& .MuiOutlinedInput-input': {
+						padding: '8.5px 14px',
+					},
+				}}
 			>
-				<div className="select-value">
-					{selectedOption ? selectedOption.label : placeholder}
-				</div>
-				<div className="select-arrow">▼</div>
-			</div>
-
-			{isOpen && (
-				<div className="select-dropdown">
-					{searchable && (
-						<input
-							type="text"
-							className="select-search"
-							placeholder="Search..."
-							value={searchTerm}
-							onChange={(e) => setSearchTerm(e.target.value)}
-							onClick={(e) => e.stopPropagation()}
-						/>
-					)}
-
-					<div className="select-options">
-						{filteredOptions.length > 0 ? (
-							filteredOptions.map((option) => (
-								<div
-									key={option.value}
-									className={`select-option ${
-										selectedOption?.value === option.value
-											? 'select-option-selected'
-											: ''
-									}`.trim()}
-									onClick={() => handleSelect(option)}
-								>
-									{option.label}
-								</div>
-							))
-						) : (
-							<div className="select-no-options">
-								No options found
-							</div>
-						)}
-					</div>
-				</div>
-			)}
-
-			{error && touched && (
-				<span className="select-error-text">{error}</span>
-			)}
-		</div>
+				{!value && placeholder && (
+					<MenuItem value="" disabled>
+						<em>{placeholder}</em>
+					</MenuItem>
+				)}
+				{filteredOptions.map((option) => (
+					<MenuItem key={option.value} value={option.value}>
+						{option.label}
+					</MenuItem>
+				))}
+				{filteredOptions.length === 0 && searchTerm && (
+					<MenuItem disabled>
+						<em>No options found</em>
+					</MenuItem>
+				)}
+			</TextField>
+		</Box>
 	);
 };
 
@@ -138,6 +114,9 @@ Select.propTypes = {
 	multi: PropTypes.bool,
 	className: PropTypes.string,
 	onBlur: PropTypes.func,
+	variant: PropTypes.oneOf(['outlined', 'filled', 'standard']),
+	size: PropTypes.oneOf(['small', 'medium']),
+	fullWidth: PropTypes.bool,
 };
 
 export default Select;
