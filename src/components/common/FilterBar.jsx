@@ -11,7 +11,7 @@ import {
 	useTheme,
 	Chip,
 } from '@mui/material';
-import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 /**
  * Filter Bar Component

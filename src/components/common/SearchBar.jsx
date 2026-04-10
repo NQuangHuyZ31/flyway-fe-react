@@ -1,6 +1,6 @@
 import React from 'react';
 import { TextField, InputAdornment, useTheme } from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
+import SearchIcon from '@mui/icons-material/Search';
 
 /**
  * Search Bar Component

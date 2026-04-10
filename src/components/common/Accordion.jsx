@@ -10,7 +10,7 @@ import {
 	AccordionDetails,
 	Box,
 } from '@mui/material';
-import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const Accordion = ({
 	items,

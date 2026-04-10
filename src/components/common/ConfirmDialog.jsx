@@ -7,7 +7,7 @@ import {
 	Button,
 	useTheme,
 } from '@mui/material';
-import { AlertCircle as WarningIcon } from 'lucide-react';
+import Delete from '@mui/icons-material/Delete';
 
 /**
  * Reusable Confirmation Dialog component
@@ -49,7 +49,7 @@ const ConfirmDialog = ({
 					color: severityColors[severity],
 				}}
 			>
-				<WarningIcon size={24} />
+				<Delete />
 				{title}
 			</DialogTitle>
 			<DialogContent>
@@ -71,4 +71,4 @@ const ConfirmDialog = ({
 	);
 };
 
-export default ConfirmDialog;
+export default React.memo(ConfirmDialog);

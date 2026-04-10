@@ -5,7 +5,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Alert as MUIAlert, AlertTitle, Box, IconButton } from '@mui/material';
-import { Close } from '@mui/icons-material';
 
 const Alert = ({
 	type = 'info',

@@ -8,7 +8,8 @@ import {
 	Link,
 	Card,
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 
 const PageHeader = ({
 	title,

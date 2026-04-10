@@ -7,51 +7,15 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Link } from 'react-router-dom';
 
 function DataTable({
 	columns,
-	rows,
 	pagination,
 	total,
 	onPageChange,
-	onView,
-	onDelete,
 	showActions = true,
-	to = '',
-	linkLabel = '',
+	children,
 }) {
-	const [anchorEl, setAnchorEl] = useState(null);
-	const [selectedRowId, setSelectedRowId] = useState(null);
-
-	const handleMenuOpen = (event, rowId) => {
-		setAnchorEl(event.currentTarget);
-		setSelectedRowId(rowId);
-	};
-
-	const handleMenuClose = () => {
-		setAnchorEl(null);
-		setSelectedRowId(null);
-	};
-
-	const handleView = () => {
-		if (onView) {
-			onView(selectedRowId);
-		}
-		handleMenuClose();
-	};
-
-	const handleDelete = () => {
-		if (onDelete) {
-			onDelete(selectedRowId);
-		}
-		handleMenuClose();
-	};
-
 	const handleChangePage = useCallback(
 		(event, newPage) => {
 			onPageChange(newPage);
@@ -106,79 +70,23 @@ function DataTable({
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{rows.map((row) => {
-							return (
-								<TableRow
-									hover
-									role="checkbox"
-									tabIndex={-1}
-									key={row.id}
+						{total && total > 0 ? (
+							children
+						) : (
+							<TableRow>
+								<TableCell
+									colSpan={columns.length}
+									align="center"
 								>
-									{showActions && (
-										<TableCell align="center">
-											<IconButton
-												size="small"
-												onClick={(e) =>
-													handleMenuOpen(e, row.id)
-												}
-												aria-label="actions"
-											>
-												<MoreVertIcon fontSize="small" />
-											</IconButton>
-										</TableCell>
-									)}
-									{columns.map((column) => {
-										const value = row[column.key];
-										return column.key == linkLabel && to ? (
-											<TableCell
-												key={column.key}
-												align={column.align}
-											>
-												<Link
-													key={row.id}
-													to={`${to}/${row.id}/detail`}
-													style={{
-														textDecoration: 'none',
-														color: 'blue',
-													}}
-												>
-													{column.format &&
-													typeof value === 'number'
-														? column.format(value)
-														: value}
-												</Link>
-											</TableCell>
-										) : (
-											<TableCell
-												key={column.key}
-												align={column.align}
-											>
-												{column.format &&
-												typeof value === 'number'
-													? column.format(value)
-													: value}
-											</TableCell>
-										);
-									})}
-								</TableRow>
-							);
-						})}
+									Không có dữ liệu
+								</TableCell>
+							</TableRow>
+						)}
 					</TableBody>
 				</Table>
 			</TableContainer>
 
-			{/* Action Menu */}
-			<Menu
-				anchorEl={anchorEl}
-				open={Boolean(anchorEl)}
-				onClose={handleMenuClose}
-			>
-				<MenuItem onClick={handleView}>Xem chi tiết</MenuItem>
-				<MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-					Xóa
-				</MenuItem>
-			</Menu>
-
+			{/* Pagination */}
 			<TablePagination
 				rowsPerPageOptions={[]}
 				component="div"

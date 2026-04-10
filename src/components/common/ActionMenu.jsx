@@ -1,11 +1,8 @@
 import React from 'react';
 import { Box, Button, Menu, MenuItem, useTheme } from '@mui/material';
-import {
-	MoreVert as MoreIcon,
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-	Download as DownloadIcon,
-} from '@mui/icons-material';
+import MoreIcon from '@mui/icons-material/MoreVert';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 /**
  * Action Menu Component

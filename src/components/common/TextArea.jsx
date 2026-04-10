@@ -4,14 +4,8 @@
 
 import React, { forwardRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import {
-	TextField,
-	Box,
-	FormHelperText,
-	Stack,
-} from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
-
+import { TextField, Box, FormHelperText, Stack } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 const TextArea = forwardRef(
 	(
 		{
@@ -71,9 +65,7 @@ const TextArea = forwardRef(
 			clearable && internalValue && !disabled && !readOnly;
 
 		const hasError = error && touched;
-		const helperText = hasError
-			? errorMessage || error
-			: hint || '';
+		const helperText = hasError ? errorMessage || error : hint || '';
 
 		return (
 			<Box className={className}>
@@ -177,106 +169,6 @@ TextArea.propTypes = {
 	fullWidth: PropTypes.bool,
 	variant: PropTypes.oneOf(['outlined', 'filled', 'standard']),
 	size: PropTypes.oneOf(['small', 'medium']),
-};
-
-export default TextArea;
-						name={name}
-						value={internalValue}
-						onChange={handleChange}
-						onBlur={handleBlur}
-						onFocus={handleFocus}
-						placeholder={placeholder}
-						disabled={disabled}
-						readOnly={readOnly}
-						required={required}
-						minLength={minLength}
-						maxLength={maxLength}
-						rows={rows}
-						aria-label={ariaLabel || label}
-						aria-describedby={ariaDescribedBy}
-						aria-invalid={!!(error && touched)}
-						data-testid={testId}
-						{...props}
-					/>
-
-					{showClearBtn && (
-						<button
-							type="button"
-							className="textarea-clear-btn"
-							onClick={handleClear}
-							aria-label="Clear textarea"
-						>
-							✕
-						</button>
-					)}
-				</div>
-
-				{/* Counter and validation feedback */}
-				<div className="textarea-footer">
-					<div className="textarea-feedback">
-						{error && touched && (
-							<span
-								className="textarea-error-message"
-								role="alert"
-							>
-								{errorMessage || error}
-							</span>
-						)}
-						{successMessage && touched && !error && (
-							<span className="textarea-success-message">
-								✓ {successMessage}
-							</span>
-						)}
-						{hint && !error && (
-							<span className="textarea-hint">{hint}</span>
-						)}
-					</div>
-
-					{showCounter && maxLength && (
-						<span
-							className={`textarea-counter ${
-								charCount > maxLength * 0.8
-									? 'textarea-counter-warning'
-									: ''
-							}`}
-						>
-							{charCount}/{maxLength}
-						</span>
-					)}
-				</div>
-			</div>
-		);
-	},
-);
-
-TextArea.displayName = 'TextArea';
-
-TextArea.propTypes = {
-	label: PropTypes.string,
-	name: PropTypes.string.isRequired,
-	value: PropTypes.string,
-	onChange: PropTypes.func,
-	onBlur: PropTypes.func,
-	onFocus: PropTypes.func,
-	placeholder: PropTypes.string,
-	disabled: PropTypes.bool,
-	readOnly: PropTypes.bool,
-	required: PropTypes.bool,
-	error: PropTypes.string,
-	errorMessage: PropTypes.string,
-	successMessage: PropTypes.string,
-	touched: PropTypes.bool,
-	hint: PropTypes.string,
-	minLength: PropTypes.number,
-	maxLength: PropTypes.number,
-	rows: PropTypes.number,
-	resizable: PropTypes.bool,
-	showCounter: PropTypes.bool,
-	clearable: PropTypes.bool,
-	className: PropTypes.string,
-	ariaLabel: PropTypes.string,
-	ariaDescribedBy: PropTypes.string,
-	testId: PropTypes.string,
 };
 
 export default TextArea;

@@ -6,9 +6,9 @@ export const APP_VERSION = '1.0.0';
 
 // API Configuration
 export const API_BASE_URL =
-	process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+	import.meta.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 export const API_TIMEOUT = parseInt(
-	process.env.REACT_APP_API_TIMEOUT || '10000',
+	import.meta.env.REACT_APP_API_TIMEOUT || '10000',
 );
 
 // Storage Keys
@@ -44,9 +44,9 @@ export const USER_ROLES = {
 
 // Product Status
 export const PRODUCT_STATUS = {
-	ACTIVE: 'active',
-	INACTIVE: 'inactive',
-	DISCONTINUED: 'discontinued',
+	ACTIVE: 'Hoạt động',
+	INACTIVE: 'Không hoạt động',
+	DISCONTINUED: 'Ngừng bán',
 };
 
 // Inventory Status
