@@ -27,7 +27,7 @@ const MainLayout = ({ children }) => {
 	return (
 		<Box className="main-layout">
 			{/* Header with theme toggle */}
-			<Header 
+			<Header
 				onMenuToggle={handleSidebarToggle}
 				onThemeToggle={toggleTheme}
 				isDarkMode={mode === 'dark'}

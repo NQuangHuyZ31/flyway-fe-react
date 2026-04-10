@@ -23,7 +23,7 @@ import ClearIcon from '@mui/icons-material/Clear';
  * @component
  * @example
  * return (
- *   <ProductSearch 
+ *   <ProductSearch
  *     onSearch={handleSearch}
  *     isLoading={loading}
  *     categories={categories}
@@ -91,9 +91,10 @@ export default function ProductSearch({
 				mb: 3,
 				border: `1px solid ${theme.palette.divider}`,
 				borderRadius: theme.spacing(1),
-				backgroundColor: theme.palette.mode === 'dark'
-					? theme.palette.background.paper
-					: '#fafafa',
+				backgroundColor:
+					theme.palette.mode === 'dark'
+						? theme.palette.background.paper
+						: '#fafafa',
 			}}
 		>
 			<Grid container spacing={2} alignItems="flex-end">
@@ -155,11 +156,7 @@ export default function ProductSearch({
 
 				{/* Status Filter */}
 				<Grid item xs={12} sm={6} md={3}>
-					<FormControl
-						fullWidth
-						size="small"
-						disabled={isLoading}
-					>
+					<FormControl fullWidth size="small" disabled={isLoading}>
 						<InputLabel>Trạng thái</InputLabel>
 						<Select
 							value={filters.status}
@@ -168,7 +165,9 @@ export default function ProductSearch({
 						>
 							<MenuItem value="">Tất cả</MenuItem>
 							<MenuItem value="active">Hoạt động</MenuItem>
-							<MenuItem value="inactive">Ngưng hoạt động</MenuItem>
+							<MenuItem value="inactive">
+								Ngưng hoạt động
+							</MenuItem>
 						</Select>
 					</FormControl>
 				</Grid>
@@ -236,8 +235,9 @@ export default function ProductSearch({
 					{filters.category && (
 						<Chip
 							label={`Danh mục: ${
-								categories.find((c) => c.id === filters.category)
-									?.name || 'N/A'
+								categories.find(
+									(c) => c.id === filters.category,
+								)?.name || 'N/A'
 							}`}
 							onDelete={() => {
 								setFilters((prev) => ({

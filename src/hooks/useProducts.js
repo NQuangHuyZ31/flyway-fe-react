@@ -24,34 +24,39 @@ export function useProducts(initialFilters = {}, autoFetch = true) {
 	/**
 	 * Fetch products from API
 	 */
-	const fetchProducts = useCallback(async (searchFilters = filters) => {
-		setLoading(true);
-		setError(null);
-		try {
-			const response = await ProductService.getProducts(searchFilters);
-			
-			// Handle different response formats
-			const data = response.data || response;
-			setProducts(Array.isArray(data) ? data : data.data || []);
-			
-			// Extract metadata if available
-			if (response.meta) {
-				setTotalCount(response.meta.total || 0);
-				setCurrentPage(response.meta.current_page || 1);
-			} else {
-				setTotalCount(data.length || 0);
+	const fetchProducts = useCallback(
+		async (searchFilters = filters) => {
+			setLoading(true);
+			setError(null);
+			try {
+				const response = await ProductService.getProducts(
+					searchFilters,
+				);
+
+				// Handle different response formats
+				const data = response.data || response;
+				setProducts(Array.isArray(data) ? data : data.data || []);
+
+				// Extract metadata if available
+				if (response.meta) {
+					setTotalCount(response.meta.total || 0);
+					setCurrentPage(response.meta.current_page || 1);
+				} else {
+					setTotalCount(data.length || 0);
+				}
+			} catch (err) {
+				const errorMessage =
+					err.response?.data?.message ||
+					err.message ||
+					'Tải sản phẩm thất bại';
+				setError(errorMessage);
+				setProducts([]);
+			} finally {
+				setLoading(false);
 			}
-		} catch (err) {
-			const errorMessage = 
-				err.response?.data?.message || 
-				err.message || 
-				'Tải sản phẩm thất bại';
-			setError(errorMessage);
-			setProducts([]);
-		} finally {
-			setLoading(false);
-		}
-	}, [filters]);
+		},
+		[filters],
+	);
 
 	/**
 	 * Fetch on component mount or when filters change
@@ -72,28 +77,34 @@ export function useProducts(initialFilters = {}, autoFetch = true) {
 	/**
 	 * Update filters and fetch
 	 */
-	const updateFilters = useCallback((newFilters) => {
-		const updatedFilters = {
-			...filters,
-			...newFilters,
-			page: 1, // Reset to first page on new filters
-		};
-		setFilters(updatedFilters);
-		fetchProducts(updatedFilters);
-	}, [filters, fetchProducts]);
+	const updateFilters = useCallback(
+		(newFilters) => {
+			const updatedFilters = {
+				...filters,
+				...newFilters,
+				page: 1, // Reset to first page on new filters
+			};
+			setFilters(updatedFilters);
+			fetchProducts(updatedFilters);
+		},
+		[filters, fetchProducts],
+	);
 
 	/**
 	 * Handle page change
 	 */
-	const handlePageChange = useCallback((page) => {
-		const updatedFilters = {
-			...filters,
-			page,
-		};
-		setCurrentPage(page);
-		setFilters(updatedFilters);
-		fetchProducts(updatedFilters);
-	}, [filters, fetchProducts]);
+	const handlePageChange = useCallback(
+		(page) => {
+			const updatedFilters = {
+				...filters,
+				page,
+			};
+			setCurrentPage(page);
+			setFilters(updatedFilters);
+			fetchProducts(updatedFilters);
+		},
+		[filters, fetchProducts],
+	);
 
 	/**
 	 * Get total pages

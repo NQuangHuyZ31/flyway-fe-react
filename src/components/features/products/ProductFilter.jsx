@@ -56,7 +56,7 @@ export default function ProductFilter({
 	const handleApplyFilters = () => {
 		// Remove empty filters
 		const cleanedFilters = Object.fromEntries(
-			Object.entries(advancedFilters).filter(([, value]) => value !== '')
+			Object.entries(advancedFilters).filter(([, value]) => value !== ''),
 		);
 		onFilter(cleanedFilters);
 	};
@@ -80,7 +80,7 @@ export default function ProductFilter({
 	 * Check if any filters are applied
 	 */
 	const hasActiveFilters = Object.values(advancedFilters).some(
-		(value) => value !== ''
+		(value) => value !== '',
 	);
 
 	return (
@@ -89,9 +89,10 @@ export default function ProductFilter({
 			sx={{
 				border: `1px solid ${theme.palette.divider}`,
 				borderRadius: theme.spacing(1),
-				backgroundColor: theme.palette.mode === 'dark'
-					? theme.palette.background.paper
-					: '#fafafa',
+				backgroundColor:
+					theme.palette.mode === 'dark'
+						? theme.palette.background.paper
+						: '#fafafa',
 			}}
 		>
 			{/* Filter Toggle Button */}
@@ -102,13 +103,15 @@ export default function ProductFilter({
 					alignItems: 'center',
 					justifyContent: 'space-between',
 					cursor: 'pointer',
-					backgroundColor: theme.palette.mode === 'dark'
-						? 'rgba(255,255,255,0.05)'
-						: 'rgba(0,0,0,0.02)',
+					backgroundColor:
+						theme.palette.mode === 'dark'
+							? 'rgba(255,255,255,0.05)'
+							: 'rgba(0,0,0,0.02)',
 					'&:hover': {
-						backgroundColor: theme.palette.mode === 'dark'
-							? 'rgba(255,255,255,0.08)'
-							: 'rgba(0,0,0,0.04)',
+						backgroundColor:
+							theme.palette.mode === 'dark'
+								? 'rgba(255,255,255,0.08)'
+								: 'rgba(0,0,0,0.04)',
 					},
 				}}
 				onClick={() => setExpanded(!expanded)}
@@ -119,9 +122,9 @@ export default function ProductFilter({
 						{hasActiveFilters
 							? `Bộ lọc (${
 									Object.values(advancedFilters).filter(
-										(v) => v !== ''
+										(v) => v !== '',
 									).length
-								  } đã chọn)`
+							  } đã chọn)`
 							: 'Bộ lọc nâng cao'}
 					</span>
 				</Box>
@@ -138,7 +141,12 @@ export default function ProductFilter({
 
 			{/* Filter Content */}
 			<Collapse in={expanded}>
-				<Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+				<Box
+					sx={{
+						p: 2,
+						borderTop: `1px solid ${theme.palette.divider}`,
+					}}
+				>
 					<Grid container spacing={2} alignItems="flex-end">
 						{/* Price Range */}
 						<Grid item xs={12} sm={6} md={2}>

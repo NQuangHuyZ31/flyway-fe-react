@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
 	Box,
@@ -23,7 +23,7 @@ const ProductList = () => {
 	const navigate = useNavigate();
 	const theme = useTheme();
 	const { showToast } = useToast();
-	const { products, loading, error, totalCount, handlePageChange, updateFilters, refetch } = useProducts();
+	const { products, loading, error, totalCount, updateFilters, refetch } = useProducts();
 	const [categories, setCategories] = useState([]);
 	const [confirmDelete, setConfirmDelete] = useState({
 		open: false,
@@ -212,120 +212,3 @@ const ProductList = () => {
 ProductList.propTypes = {};
 
 export default ProductList;
-							>
-								Thêm Sản Phẩm
-							</Button>
-						</Box>
-					</Box>
-				</Card>
-
-				{/* Error Message */}
-				{error && (
-					<Card
-						sx={{
-							mb: 3,
-							p: 2,
-							backgroundColor: '#ffebee',
-							border: '1px solid #ef5350',
-							borderRadius: 2,
-						}}
-					>
-						<Typography sx={{ color: '#c62828' }}>
-							{error}
-						</Typography>
-					</Card>
-				)}
-
-				{/* Results Card */}
-				<Card
-					sx={{
-						borderRadius: 2,
-						boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)',
-						overflow: 'hidden',
-					}}
-				>
-					{/* Loading State */}
-					{loading && !products.length ? (
-						<Box
-							sx={{
-								p: 6,
-								textAlign: 'center',
-								display: 'flex',
-								justifyContent: 'center',
-								alignItems: 'center',
-								minHeight: '400px',
-							}}
-						>
-							<LoadingSpinner />
-						</Box>
-					) : products.length === 0 ? (
-						<Box
-							sx={{
-								p: 6,
-								textAlign: 'center',
-								minHeight: '400px',
-								display: 'flex',
-								flexDirection: 'column',
-								justifyContent: 'center',
-								alignItems: 'center',
-								backgroundColor: '#f8f9fa',
-							}}
-						>
-							<Typography
-								variant="h6"
-								sx={{
-									color: '#666',
-									mb: 1,
-									fontWeight: 500,
-								}}
-							>
-								{searchValue
-									? '❌ Không tìm thấy sản phẩm'
-									: '📦 Chưa có sản phẩm'}
-							</Typography>
-							<Typography
-								sx={{ color: '#999', fontSize: '0.95rem' }}
-							>
-								{searchValue
-									? 'Thử tìm kiếm với từ khóa khác'
-									: 'Bắt đầu bằng cách thêm sản phẩm mới'}
-							</Typography>
-						</Box>
-					) : (
-						<ProductTable
-							columns={columns}
-							rows={products}
-							pagination={pagination}
-							total={pagination.total}
-							onPageChange={handlePageChange}
-							onEdit={handleEditProduct}
-							onView={handleViewProduct}
-							onDelete={handleDeleteClick}
-							showActions={true}
-						/>
-					)}
-				</Card>
-			</Box>
-
-			{/* Delete Confirmation Dialog */}
-			<ConfirmDialog
-				open={confirmDelete.open}
-				title="Xóa Sản Phẩm"
-				message={`Bạn có chắc chắn muốn xóa sản phẩm "${confirmDelete.productName}"? Hành động này không thể hoàn tác.`}
-				onConfirm={handleConfirmDelete}
-				onCancel={() =>
-					setConfirmDelete({
-						open: false,
-						productId: null,
-						productName: '',
-					})
-				}
-				confirmText="Xóa"
-				cancelText="Hủy"
-				confirmColor="error"
-			/>
-		</Box>
-	);
-};
-
-export default React.memo(ProductList);
