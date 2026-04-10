@@ -1,13 +1,11 @@
-import {
-	Dashboard as DashboardIcon,
-	Inventory2 as InventoryIcon,
-	People as PeopleIcon,
-	ShoppingCart as OrdersIcon,
-	Assessment as ReportsIcon,
-	Settings as SettingsIcon,
-	LocalShipping as ShippingIcon,
-	LocalOffer as QuotationIcon,
-} from '@mui/icons-material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import InventoryIcon from '@mui/icons-material/Inventory2';
+import PeopleIcon from '@mui/icons-material/People';
+import OrdersIcon from '@mui/icons-material/ShoppingCart';
+import ReportsIcon from '@mui/icons-material/Assessment';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ShippingIcon from '@mui/icons-material/LocalShipping';
+import QuotationIcon from '@mui/icons-material/LocalOffer';
 const MenuConfig = [
 	{ label: 'Dashboard', path: '/', icon: DashboardIcon },
 	{

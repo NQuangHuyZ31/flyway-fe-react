@@ -12,7 +12,7 @@ const getProducts = async (params = {}) => {
 		return res.data;
 	} catch (error) {
 		const message =
-			error.response?.data?.message || 'Tải san phẩm thất bại';
+			error.response?.data?.message || 'Tải sản phẩm thất bại';
 		throw new Error(message);
 	}
 };
@@ -24,7 +24,7 @@ const getProduct = async (id) => {
 		return res.data;
 	} catch (error) {
 		const message =
-			error.response?.data?.message || 'Tải san phẩm thất bại';
+			error.response?.data?.message || 'Tải sản phẩm thất bại';
 		throw new Error(message);
 	}
 };
@@ -35,7 +35,7 @@ const createProduct = async (data) => {
 		return res.data;
 	} catch (error) {
 		const message =
-			error.response?.data?.message || 'Tạo san phẩm thất bại';
+			error.response?.data?.message || 'Tạo sản phẩm thất bại';
 		throw new Error(message);
 	}
 };
@@ -46,7 +46,7 @@ const updateProduct = async (id, data) => {
 		return res.data;
 	} catch (error) {
 		const message =
-			error.response?.data?.message || 'Cập nhật san phẩm thất bại';
+			error.response?.data?.message || 'Cập nhật sản phẩm thất bại';
 		throw new Error(message);
 	}
 };
@@ -57,7 +57,7 @@ const deleteProduct = async (id) => {
 		return res.data;
 	} catch (error) {
 		const message =
-			error.response?.data?.message || 'Xóa san phẩm thất bại';
+			error.response?.data?.message || 'Xóa sản phẩm thất bại';
 		throw new Error(message);
 	}
 };

@@ -1,104 +1,214 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Box, Card, Typography } from '@mui/material';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import DataTable from '../../components/common/DataTable';
+import PropTypes from 'prop-types';
+import {
+	Box,
+	Card,
+	Typography,
+	Button,
+	Container,
+	useTheme,
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import AddIcon from '@mui/icons-material/Add';
 import ProductService from '../../api/services/productService';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import Toast from '../../components/common/Toast';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import ProductTable from '../../components/features/products/ProductTable';
+import ProductSearch from '../../components/features/products/ProductSearch';
+import ProductFilter from '../../components/features/products/ProductFilter';
+import { useToast } from '../../contexts/ToastContext';
+import useProducts from '../../hooks/useProducts';
 
 const ProductList = () => {
-	const [products, setproducts] = useState([]);
-	const [headers, setHeaders] = useState([]);
-	const [filters, setFilters] = useState({
-		page: 1,
-		per_page: 25,
-		total: 0,
-		filter: {},
+	const navigate = useNavigate();
+	const theme = useTheme();
+	const { showToast } = useToast();
+	const { products, loading, error, totalCount, updateFilters, refetch } = useProducts();
+	const [categories, setCategories] = useState([]);
+	const [confirmDelete, setConfirmDelete] = useState({
+		open: false,
+		productId: null,
+		productName: '',
 	});
 
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState(null);
+	/**
+	 * Fetch categories on component mount
+	 */
+	useEffect(() => {
+		const fetchCategories = async () => {
+			try {
+				// TODO: Replace with actual category API call
+				const dummyCategories = [
+					{ id: 1, name: 'Electronics' },
+					{ id: 2, name: 'Clothing' },
+					{ id: 3, name: 'Food' },
+				];
+				setCategories(dummyCategories);
+			} catch (err) {
+				console.error('Failed to fetch categories:', err);
+			}
+		};
+		fetchCategories();
+	}, []);
 
-	const fetchProducts = useCallback(async () => {
-		setLoading(true);
-		try {
-			const data = await ProductService.getProducts({
-				page: filters.page,
-				per_page: filters.per_page,
-				filter: filters.filter,
-			});
-
-			setproducts(data.data);
-			setHeaders(data.header_filter);
-			setFilters((prev) => ({
-				...prev,
-				total: data.pagination.total,
-			}));
-			setError(null);
-		} catch (error) {
-			setError(error.message);
-		} finally {
-			setLoading(false);
+	/**
+	 * Show error toasts
+	 */
+	useEffect(() => {
+		if (error) {
+			showToast(error, 'error');
 		}
-	}, [filters.page, filters.per_page]);
+	}, [error, showToast]);
 
-	const handleChangePage = (newPage) => {
-		setFilters((prev) => ({ ...prev, page: newPage + 1 }));
+	/**
+	 * Handle product search with filters
+	 */
+	const handleSearch = useCallback((filters) => {
+		updateFilters(filters);
+	}, [updateFilters]);
+
+	/**
+	 * Handle advanced filter application
+	 */
+	const handleAdvancedFilter = useCallback((advancedFilters) => {
+		updateFilters(advancedFilters);
+	}, [updateFilters]);
+
+	const handleCreateProduct = () => {
+		navigate('/products/create');
 	};
 
-	useEffect(() => {
-		fetchProducts();
-	}, [filters.page, filters.per_page]);
+	const handleEditProduct = (product) => {
+		navigate(`/products/${product.id}/edit`, { state: { product } });
+	};
+
+	const handleViewProduct = (productId) => {
+		navigate(`/products/${productId}/detail`);
+	};
+
+	const handleDeleteClick = (productId, productName) => {
+		setConfirmDelete({ open: true, productId, productName });
+	};
+
+	const handleConfirmDelete = async () => {
+		if (!confirmDelete.productId) return;
+		try {
+			await ProductService.deleteProduct(confirmDelete.productId);
+			showToast('Xóa sản phẩm thành công', 'success');
+			setConfirmDelete({ open: false, productId: null, productName: '' });
+			refetch(); // Refetch the product list
+		} catch (err) {
+			const errorMessage = err.message || 'Không thể xóa sản phẩm';
+			showToast(errorMessage, 'error');
+		}
+	};
 
 	return (
-		<Box sx={{ backgroundColor: 'white' }}>
-			<Box sx={{ p: 1 }}>
-				{/* Product Table */}
-				<Card
-					sx={{
-						borderRadius: 2,
-						boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-						overflow: 'hidden',
-						transition: 'boxShadow 0.3s ease',
-					}}
-				>
-					<Box
-						sx={{
-							p: 2,
-							backgroundColor: '#f5f7fa',
-							borderBottom: '1px solid #e0e0e0',
-						}}
-					>
-						<Typography
-							variant="h5"
-							sx={{ fontWeight: 700, color: '#1a1a1a' }}
+		<Box sx={{ py: 3 }}>
+			<Container maxWidth="xl">
+				{/* Page Header */}
+				<Box sx={{ mb: 4 }}>
+					<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+						<Box>
+							<Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+								Quản Lý Sản Phẩm
+							</Typography>
+							<Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+								Tổng cộng: <strong>{totalCount} sản phẩm</strong>
+							</Typography>
+						</Box>
+						<Button
+							variant="contained"
+							startIcon={<AddIcon />}
+							onClick={handleCreateProduct}
+							sx={{ textTransform: 'none' }}
 						>
-							Danh sách sản phẩm
-						</Typography>
-						<Typography variant="caption" sx={{ color: '#666' }}>
-							Quản lý và cập nhật thông tin sản phẩm trong hệ
-							thống
-						</Typography>
+							Thêm Sản Phẩm
+						</Button>
 					</Box>
-					<Box sx={{ p: 0 }}>
-						<DataTable
-							columns={headers}
-							rows={products}
-							pagination={filters}
-							total={filters.total}
-							onPageChange={handleChangePage}
-							selectable={true}
-							onView={(rowId) => console.log('id', rowId)}
-							to="products"
-							linkLabel="product_name"
+				</Box>
+
+				{/* Search Component */}
+				<ProductSearch
+					onSearch={handleSearch}
+					isLoading={loading}
+					categories={categories}
+				/>
+
+				{/* Advanced Filter Component */}
+				<Box sx={{ mb: 3 }}>
+					<ProductFilter
+						onFilter={handleAdvancedFilter}
+						categories={categories}
+						isLoading={loading}
+					/>
+				</Box>
+
+				{/* Error State */}
+				{error && !loading && (
+					<Card sx={{ mb: 3, p: 2, backgroundColor: theme.palette.error.light }}>
+						<Typography color="error.main">{error}</Typography>
+					</Card>
+				)}
+
+				{/* Loading State */}
+				{loading && <LoadingSpinner />}
+
+				{/* Products Table */}
+				{!loading && products.length > 0 && (
+					<Card>
+						<ProductTable
+							data={products}
+							onEdit={handleEditProduct}
+							onDelete={handleDeleteClick}
+							onView={handleViewProduct}
+							isLoading={loading}
 						/>
-					</Box>
-				</Card>
-			</Box>
-			<LoadingSpinner loading={loading} message="Đang tải dữ liệu....." />
-			{error && <Toast message={error} type="error" duration={3000} />}
+					</Card>
+				)}
+
+				{/* Empty State */}
+				{!loading && products.length === 0 && !error && (
+					<Card sx={{ p: 4, textAlign: 'center' }}>
+						<Typography color="textSecondary">
+							{totalCount === 0
+								? 'Không có sản phẩm nào. Hãy tạo sản phẩm mới!'
+								: 'Không tìm thấy sản phẩm nào phù hợp với tiêu chí tìm kiếm.'}
+						</Typography>
+						{totalCount === 0 && (
+							<Button
+								variant="contained"
+								onClick={handleCreateProduct}
+								sx={{ mt: 2 }}
+								startIcon={<AddIcon />}
+							>
+								Tạo Sản Phẩm Đầu Tiên
+							</Button>
+						)}
+					</Card>
+				)}
+
+				{/* Confirm Delete Dialog */}
+				<ConfirmDialog
+					open={confirmDelete.open}
+					title="Xóa sản phẩm"
+					message={`Bạn có chắc chắn muốn xóa sản phẩm "${confirmDelete.productName}"? Hành động này không thể hoàn tác.`}
+					onConfirm={handleConfirmDelete}
+					onCancel={() =>
+						setConfirmDelete({
+							open: false,
+							productId: null,
+							productName: '',
+						})
+					}
+					confirmText="Xóa"
+					cancelText="Hủy"
+				/>
+			</Container>
 		</Box>
 	);
 };
+
+ProductList.propTypes = {};
 
 export default ProductList;

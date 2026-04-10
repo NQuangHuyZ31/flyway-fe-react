@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import TopLoadingBar from '../components/common/TopLoadingBar';
 
 /**
  * ProtectedRoute Component
@@ -15,7 +16,7 @@ const ProtectedRoute = () => {
 		isInitialized,
 	});
 	// If not authenticated, redirect to login
-	if (!isInitialized) return;
+	if (!isInitialized) return <TopLoadingBar loading={true} />;
 
 	if (!isAuthenticated) return <Navigate to="/login" replace />;
 

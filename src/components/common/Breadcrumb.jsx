@@ -11,7 +11,7 @@ import {
 	Typography,
 	Box,
 } from '@mui/material';
-import { NavigateNext } from '@mui/icons-material';
+import NavigateNext from '@mui/icons-material/NavigateNext';
 
 const Breadcrumb = ({
 	items,

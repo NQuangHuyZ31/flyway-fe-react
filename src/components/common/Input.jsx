@@ -3,7 +3,6 @@
 // Converted to Material-UI
 
 import React, { forwardRef, useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
 	TextField,
 	InputAdornment,
@@ -11,7 +10,9 @@ import {
 	FormHelperText,
 	IconButton,
 } from '@mui/material';
-import { Visibility, VisibilityOff, Close } from '@mui/icons-material';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Close from '@mui/icons-material/Close';
 
 const Input = forwardRef(
 	(
@@ -249,64 +250,5 @@ const Input = forwardRef(
 		);
 	},
 );
-
-Input.displayName = 'Input';
-
-Input.propTypes = {
-	label: PropTypes.string,
-	name: PropTypes.string.isRequired,
-	type: PropTypes.oneOf([
-		'text',
-		'email',
-		'password',
-		'number',
-		'tel',
-		'url',
-		'search',
-		'date',
-		'time',
-		'datetime-local',
-		'month',
-		'week',
-		'color',
-		'file',
-	]),
-	placeholder: PropTypes.string,
-	value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-	onChange: PropTypes.func,
-	onBlur: PropTypes.func,
-	onFocus: PropTypes.func,
-	error: PropTypes.string,
-	errorMessage: PropTypes.string,
-	successMessage: PropTypes.string,
-	touched: PropTypes.bool,
-	disabled: PropTypes.bool,
-	readOnly: PropTypes.bool,
-	required: PropTypes.bool,
-	icon: PropTypes.elementType,
-	iconPosition: PropTypes.oneOf(['left', 'right']),
-	hint: PropTypes.string,
-	className: PropTypes.string,
-	maxLength: PropTypes.number,
-	minLength: PropTypes.number,
-	pattern: PropTypes.string,
-	validation: PropTypes.arrayOf(
-		PropTypes.shape({
-			test: PropTypes.func.isRequired,
-			message: PropTypes.string,
-		}),
-	),
-	clearable: PropTypes.bool,
-	showPasswordToggle: PropTypes.bool,
-	prefix: PropTypes.string,
-	suffix: PropTypes.string,
-	ariaLabel: PropTypes.string,
-	ariaDescribedBy: PropTypes.string,
-	testId: PropTypes.string,
-	debounceDelay: PropTypes.number,
-	fullWidth: PropTypes.bool,
-	variant: PropTypes.oneOf(['outlined', 'filled', 'standard']),
-	size: PropTypes.oneOf(['small', 'medium']),
-};
 
 export default Input;

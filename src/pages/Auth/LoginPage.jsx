@@ -11,7 +11,7 @@ import {
 	Grid,
 	useTheme,
 } from '@mui/material';
-import { Login as LoginIcon } from '@mui/icons-material';
+import LoginIcon from '@mui/icons-material/Login';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
 import auth from '../../api/services/AuthService';
@@ -22,7 +22,7 @@ const LoginPage = () => {
 	const navigate = useNavigate();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
-	const { login } = useAuth();
+	const { setCurrentUser } = useAuth();
 	const [credentials, setCredentials] = useState({
 		email: '',
 		password: '',
@@ -44,7 +44,7 @@ const LoginPage = () => {
 
 				try {
 					const user = await auth.getCurrentUser();
-					login(user.data);
+					setCurrentUser(user.data);
 				} catch (error) {
 					console.error(
 						'Failed to fetch user info after login:',

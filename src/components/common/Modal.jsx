@@ -14,7 +14,7 @@ import {
 	Box,
 	CircularProgress,
 } from '@mui/material';
-import { Close } from '@mui/icons-material';
+import Close from '@mui/icons-material/Close';
 
 const Modal = ({
 	isOpen,

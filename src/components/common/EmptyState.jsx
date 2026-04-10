@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Button, useTheme } from '@mui/material';
-import { InboxIcon } from '@mui/icons-material';
+import InboxIcon from '@mui/icons-material/InboxOutlined';
 
 /**
  * Empty State Component
