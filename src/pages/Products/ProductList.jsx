@@ -23,7 +23,8 @@ const ProductList = () => {
 	const navigate = useNavigate();
 	const theme = useTheme();
 	const { showToast } = useToast();
-	const { products, loading, error, totalCount, updateFilters, refetch } = useProducts();
+	const { products, loading, error, totalCount, updateFilters, refetch } =
+		useProducts();
 	const [categories, setCategories] = useState([]);
 	const [confirmDelete, setConfirmDelete] = useState({
 		open: false,
@@ -63,16 +64,22 @@ const ProductList = () => {
 	/**
 	 * Handle product search with filters
 	 */
-	const handleSearch = useCallback((filters) => {
-		updateFilters(filters);
-	}, [updateFilters]);
+	const handleSearch = useCallback(
+		(filters) => {
+			updateFilters(filters);
+		},
+		[updateFilters],
+	);
 
 	/**
 	 * Handle advanced filter application
 	 */
-	const handleAdvancedFilter = useCallback((advancedFilters) => {
-		updateFilters(advancedFilters);
-	}, [updateFilters]);
+	const handleAdvancedFilter = useCallback(
+		(advancedFilters) => {
+			updateFilters(advancedFilters);
+		},
+		[updateFilters],
+	);
 
 	const handleCreateProduct = () => {
 		navigate('/products/create');
@@ -108,13 +115,27 @@ const ProductList = () => {
 			<Container maxWidth="xl">
 				{/* Page Header */}
 				<Box sx={{ mb: 4 }}>
-					<Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+					<Box
+						sx={{
+							display: 'flex',
+							justifyContent: 'space-between',
+							alignItems: 'center',
+							mb: 2,
+						}}
+					>
 						<Box>
-							<Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
+							<Typography
+								variant="h4"
+								sx={{ fontWeight: 600, mb: 1 }}
+							>
 								Quản Lý Sản Phẩm
 							</Typography>
-							<Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-								Tổng cộng: <strong>{totalCount} sản phẩm</strong>
+							<Typography
+								variant="body2"
+								sx={{ color: theme.palette.text.secondary }}
+							>
+								Tổng cộng:{' '}
+								<strong>{totalCount} sản phẩm</strong>
 							</Typography>
 						</Box>
 						<Button
@@ -146,7 +167,13 @@ const ProductList = () => {
 
 				{/* Error State */}
 				{error && !loading && (
-					<Card sx={{ mb: 3, p: 2, backgroundColor: theme.palette.error.light }}>
+					<Card
+						sx={{
+							mb: 3,
+							p: 2,
+							backgroundColor: theme.palette.error.light,
+						}}
+					>
 						<Typography color="error.main">{error}</Typography>
 					</Card>
 				)}
