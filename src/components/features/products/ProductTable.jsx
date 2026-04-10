@@ -76,9 +76,7 @@ const ProductTable = ({
 
 	// Helper function to get status label
 	const getStatusLabel = (status) => {
-		return status === 1 || status === '1'
-			? 'Hoạt động'
-			: 'Không hoạt động';
+		return status === 1 || status === '1' ? 'Hoạt động' : 'Không hoạt động';
 	};
 
 	return (
@@ -91,12 +89,7 @@ const ProductTable = ({
 				showActions={showActions}
 			>
 				{rows.map((row) => (
-					<TableRow
-						key={row.id}
-						hover
-						role="checkbox"
-						tabIndex={-1}
-					>
+					<TableRow key={row.id} hover role="checkbox" tabIndex={-1}>
 						{showActions && (
 							<TableCell align="center">
 								<IconButton
