@@ -19,7 +19,15 @@ import ProductFilter from '../../components/features/products/ProductFilter';
 import { useToast } from '../../contexts/ToastContext';
 import useProducts from '../../hooks/useProducts';
 
-const ProductList = () => {
+const defaultColumns = [
+	{ key: 'product_name', label: 'Tên sản phẩm', minWidth: 200 },
+	{ key: 'sku', label: 'Mã SKU', minWidth: 100 },
+	{ key: 'price', label: 'Giá', minWidth: 100, align: 'right' },
+	{ key: 'stock_quantity', label: 'Tồn kho', minWidth: 100, align: 'center' },
+	{ key: 'status', label: 'Trạng thái', minWidth: 100 },
+];
+
+const ProductList = ({ columns = defaultColumns }) => {
 	const navigate = useNavigate();
 	const theme = useTheme();
 	const { showToast } = useToast();
@@ -185,7 +193,8 @@ const ProductList = () => {
 				{!loading && products.length > 0 && (
 					<Card>
 						<ProductTable
-							data={products}
+							columns={columns}
+							rows={products}
 							onEdit={handleEditProduct}
 							onDelete={handleDeleteClick}
 							onView={handleViewProduct}
@@ -235,7 +244,5 @@ const ProductList = () => {
 		</Box>
 	);
 };
-
-ProductList.propTypes = {};
 
 export default ProductList;

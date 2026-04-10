@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/common/PageHeader';
-import ProductList from '../../components/features/products/ProductList';
+import ProductList from './ProductList';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
@@ -19,6 +19,7 @@ const ProductsPage = () => {
 
 	// State management
 	const [products, setProducts] = useState([]);
+	const [headerTable, setHeaderTable] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -42,6 +43,7 @@ const ProductsPage = () => {
 				...filters,
 			});
 			setProducts(response.data || []);
+			setHeaderTable(response.header_filter || []);
 		} catch (error) {
 			showToast('Failed to load products', 'error');
 			console.error('Error fetching products:', error);
@@ -140,6 +142,7 @@ const ProductsPage = () => {
 			) : (
 				<ProductList
 					products={products}
+					columns={headerTable}
 					isLoading={isLoading}
 					onEdit={handleEditProduct}
 					onDelete={handleDeleteProduct}

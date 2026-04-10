@@ -16,11 +16,11 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 const ProductTable = ({
-	columns,
+	columns = [],
 	rows = [],
 	pagination = { page: 0, per_page: 15 },
 	total = 0,
-	onPageChange,
+	onPageChange = () => {},
 	onDelete,
 	onEdit,
 	onView,

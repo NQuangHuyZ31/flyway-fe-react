@@ -9,16 +9,18 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 
 function DataTable({
-	columns,
-	pagination,
-	total,
-	onPageChange,
+	columns = [],
+	pagination = { page: 0, per_page: 15 },
+	total = 0,
+	onPageChange = () => {},
 	showActions = true,
 	children,
 }) {
 	const handleChangePage = useCallback(
 		(event, newPage) => {
-			onPageChange(newPage);
+			if (onPageChange) {
+				onPageChange(newPage);
+			}
 		},
 		[onPageChange],
 	);
