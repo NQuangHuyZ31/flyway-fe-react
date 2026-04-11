@@ -8,7 +8,6 @@ import AddIcon from '@mui/icons-material/Add';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
 import productService from '../../api/services/productService';
 import { useToast } from '../../contexts/ToastContext';
 import ProductTable from '../../components/features/products/ProductTable';
@@ -28,12 +27,13 @@ const ProductsPage = () => {
 	const [filters, setFilters] = useState({
 		per_page: 25,
 		page: 1,
+		filter: {},
 	});
 	console.log('Filters changed:', filters);
 	// Fetch products on mount
 	useEffect(() => {
 		fetchProducts();
-	}, [filters.page, filters.per_page]);
+	}, [filters]);
 
 	const fetchProducts = useCallback(async () => {
 		try {
@@ -44,17 +44,13 @@ const ProductsPage = () => {
 			setProducts(response.data || []);
 			setHeaderTable(response.header_filter || []);
 			setTotal(response.pagination.total || 0);
-			setFilters((prev) => ({
-				...prev,
-				total: response.pagination.total || 0,
-			}));
 		} catch (error) {
 			showToast('Failed to load products', 'error');
 			console.error('Error fetching products:', error);
 		} finally {
 			setIsLoading(false);
 		}
-	}, [filters.page, filters.per_page]);
+	}, [filters]);
 
 	const handleDeleteProduct = (product) => {
 		setSelectedProduct(product);
@@ -68,7 +64,7 @@ const ProductsPage = () => {
 			setProducts(products.filter((p) => p.id !== selectedProduct.id));
 			showToast('Product deleted successfully', 'success');
 
-			setFilters((prev) => ({ ...prev, total: prev.total - 1 }));
+			setTotal((prevTotal) => prevTotal - 1);
 			setIsDeleteDialogOpen(false);
 		} catch (error) {
 			showToast('Failed to delete product', 'error');
@@ -104,6 +100,15 @@ const ProductsPage = () => {
 		// TODO: Open import modal or trigger file input
 		showToast('Import functionality coming soon', 'info');
 	}, [showToast]);
+
+	// Handle clearing filters
+	const handleClearFilters = useCallback(() => {
+		setFilters({
+			per_page: 25,
+			page: 1,
+			filter: {},
+		});
+	}, []);
 
 	return (
 		<Container maxWidth="xl" sx={{ py: 3 }}>
@@ -161,33 +166,38 @@ const ProductsPage = () => {
 			</Box>
 
 			{/* Products Table */}
-			{isLoading ? (
-				<LoadingSpinner loading={true} message="" />
-			) : (
-				<ProductTable
-					rows={products}
-					columns={headerTable}
-					isLoading={isLoading}
-					pagination={{
-						per_page: filters.per_page,
-						page: filters.page,
-					}}
-					total={total}
-					onDelete={handleDeleteProduct}
-					onView={(id) => navigate(`/products/${id}/detail`)}
-					onSearch={(filters) =>
-						setFilters((prev) => ({ ...prev, ...filters, page: 1 }))
-					}
-				/>
-			)}
+			<ProductTable
+				rows={products}
+				columns={headerTable}
+				isLoading={isLoading}
+				pagination={{
+					per_page: filters.per_page,
+					page: filters.page,
+				}}
+				total={total}
+				onDelete={handleDeleteProduct}
+				onView={(id) => navigate(`/products/${id}/detail`)}
+				onSearch={(filters) =>
+					setFilters((prev) => ({
+						...prev,
+						filter: {
+							...prev.filter,
+							...filters,
+						},
+						page: 1,
+					}))
+				}
+				onClear={handleClearFilters}
+				prodFilters={filters.filter}
+			/>
 
 			{/* Delete Confirmation Dialog */}
 			<ConfirmDialog
 				open={isDeleteDialogOpen}
 				onClose={() => setIsDeleteDialogOpen(false)}
 				onConfirm={confirmDelete}
-				title="Delete Product"
-				message={`Are you sure you want to delete "${selectedProduct?.product_name}"?`}
+				title="Xác nhận xóa"
+				message={`Bạn có chắc chắn muốn xóa sản phẩm "${selectedProduct?.product_name}"?`}
 				isDanger={true}
 			/>
 		</Container>

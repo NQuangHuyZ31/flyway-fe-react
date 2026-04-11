@@ -7,7 +7,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import { Typography } from '@mui/material';
+import { Typography, Box, CircularProgress } from '@mui/material';
 
 function DataTable({
 	tableTitle = '',
@@ -15,6 +15,7 @@ function DataTable({
 	pagination = { page: 0, per_page: 15 },
 	total = 0,
 	onPageChange = () => {},
+	isLoading = false,
 	showActions = true,
 	children,
 }) {
@@ -28,7 +29,25 @@ function DataTable({
 	);
 
 	return (
-		<Paper sx={{ width: '100%', overflow: 'hidden' }}>
+		<Paper sx={{ width: '100%', overflow: 'hidden', position: 'relative' }}>
+			{isLoading && (
+				<Box
+					sx={{
+						position: 'absolute',
+						top: 0,
+						left: 0,
+						width: '100%',
+						height: '100%',
+						display: 'flex',
+						justifyContent: 'center',
+						alignItems: 'center',
+						backgroundColor: 'rgba(255, 255, 255, 0.7)',
+						zIndex: 2,
+					}}
+				>
+					<CircularProgress />
+				</Box>
+			)}
 			<TableContainer
 				sx={{
 					maxHeight: 420,
@@ -50,7 +69,9 @@ function DataTable({
 				<Table stickyHeader aria-label="sticky table">
 					<TableHead>
 						<TableRow>
-							<TableCell colSpan={columns.length}>
+							<TableCell
+								colSpan={columns.length + (showActions ? 1 : 0)}
+							>
 								<Typography
 									sx={{
 										color: 'black',
@@ -86,20 +107,7 @@ function DataTable({
 							))}
 						</TableRow>
 					</TableHead>
-					<TableBody>
-						{total && total > 0 ? (
-							children
-						) : (
-							<TableRow>
-								<TableCell
-									colSpan={columns.length}
-									align="center"
-								>
-									Không có dữ liệu
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
+					<TableBody>{children}</TableBody>
 				</Table>
 			</TableContainer>
 
