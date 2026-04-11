@@ -9,7 +9,7 @@ const ENDPOINT = '/products';
 const getProducts = async (params = {}) => {
 	try {
 		const res = await axiosInstance.get(ENDPOINT, { params });
-		return res.data;
+		return res.data.data || [];
 	} catch (error) {
 		const message =
 			error.response?.data?.message || 'Tải sản phẩm thất bại';
@@ -21,7 +21,7 @@ const getProducts = async (params = {}) => {
 const getProduct = async (id) => {
 	try {
 		const res = await axiosInstance.get(`${ENDPOINT}/${id}`);
-		return res.data;
+		return res.data.data;
 	} catch (error) {
 		const message =
 			error.response?.data?.message || 'Tải sản phẩm thất bại';
@@ -32,7 +32,7 @@ const getProduct = async (id) => {
 const createProduct = async (data) => {
 	try {
 		const res = await axiosInstance.post(ENDPOINT, data);
-		return res.data;
+		return res.data.data;
 	} catch (error) {
 		const message =
 			error.response?.data?.message || 'Tạo sản phẩm thất bại';
@@ -43,7 +43,7 @@ const createProduct = async (data) => {
 const updateProduct = async (id, data) => {
 	try {
 		const res = await axiosInstance.put(`${ENDPOINT}/${id}`, data);
-		return res.data;
+		return res.data.data;
 	} catch (error) {
 		const message =
 			error.response?.data?.message || 'Cập nhật sản phẩm thất bại';
@@ -54,10 +54,24 @@ const updateProduct = async (id, data) => {
 const deleteProduct = async (id) => {
 	try {
 		const res = await axiosInstance.delete(`${ENDPOINT}/${id}`);
-		return res.data;
+		return res.data.data;
 	} catch (error) {
 		const message =
 			error.response?.data?.message || 'Xóa sản phẩm thất bại';
+		throw new Error(message);
+	}
+};
+
+const getProductBatches = async (productId, params = {}) => {
+	try {
+		const res = await axiosInstance.get(
+			`${ENDPOINT}/${productId}/batches`,
+			{ params },
+		);
+		return res.data.data || [];
+	} catch (error) {
+		const message =
+			error.response?.data?.message || 'Tải lô sản phẩm thất bại';
 		throw new Error(message);
 	}
 };
@@ -68,6 +82,7 @@ const ProductService = {
 	createProduct,
 	updateProduct,
 	deleteProduct,
+	getProductBatches,
 };
 
 export default ProductService;

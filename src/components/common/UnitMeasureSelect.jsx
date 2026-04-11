@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import React, { useEffect, useState } from 'react';
 import UnitMesureService from '../../api/services/UnitMeasureService';
 
-const UnitMeasureSelect = ({ onChange }) => {
+const UnitMeasureSelect = ({ onChange, value }) => {
 	const [unitMeasures, setUnitMeasures] = useState([]);
 	const [error, setError] = useState(null);
 
@@ -24,19 +24,15 @@ const UnitMeasureSelect = ({ onChange }) => {
 
 	return (
 		<Autocomplete
-			id="unit-measure"
 			options={unitMeasures}
-			autoHighlight
-			onChange={(event, value) => onChange(value?.id || '')}
-			getOptionLabel={(option) => option.name}
-			renderOption={(props, option) => {
-				return (
-					<Box key={option.code} component="li" {...props}>
-						{option.name}
-					</Box>
-				);
+			value={unitMeasures.find((u) => u.id === value) || null}
+			getOptionLabel={(option) => option?.name || ''}
+			onChange={(e, newValue) => {
+				onChange(newValue?.id ?? null);
 			}}
-			renderInput={(params) => <TextField {...params} label="Đơn vị" />}
+			renderInput={(params) => (
+				<TextField {...params} label="Đơn vị" size="small" />
+			)}
 		/>
 	);
 };
