@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import {
 	IconButton,
 	Menu,
@@ -11,23 +11,29 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import SearchIcon from '@mui/icons-material/Search';
 import DataTable from '../../common/DataTable';
 import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import { formatCurrency } from '../../../helpers/formatHelper';
+import ProductFilter from './ProductFilter';
+import Button from '../../common/Button';
 
 const ProductTable = ({
 	columns = [],
 	rows = [],
 	pagination = { page: 0, per_page: 15 },
 	total = 0,
-	onPageChange = () => {},
+	onPageChange,
 	onDelete,
 	onEdit,
 	onView,
+	onSearch,
 	showActions = true,
 }) => {
 	const [anchorEl, setAnchorEl] = useState(null);
 	const [selectedRow, setSelectedRow] = useState(null);
+	const [filters, setFilters] = useState({});
+
 	const open = Boolean(anchorEl);
 
 	const handleOpen = (event, rowId) => {
@@ -42,7 +48,7 @@ const ProductTable = ({
 
 	const handleDelete = (row) => {
 		if (onDelete) {
-			onDelete(row.id, row.product_name);
+			onDelete(row);
 		}
 		handleClose();
 	};
@@ -61,33 +67,36 @@ const ProductTable = ({
 		handleClose();
 	};
 
-	// Helper function to format price
-	const formatPrice = (price) => {
-		return new Intl.NumberFormat('vi-VN', {
-			style: 'currency',
-			currency: 'VND',
-		}).format(price || 0);
-	};
-
-	// Helper function to get status badge color
-	const getStatusColor = (status) => {
-		return status === 1 || status === '1' ? 'success' : 'default';
-	};
-
-	// Helper function to get status label
-	const getStatusLabel = (status) => {
-		return status === 1 || status === '1' ? 'Hoạt động' : 'Không hoạt động';
-	};
-
 	return (
 		<>
 			<DataTable
+				tableTitle="Danh sách sản phẩm"
 				columns={columns}
 				pagination={pagination}
 				total={total}
 				onPageChange={onPageChange}
 				showActions={showActions}
 			>
+				<TableRow>
+					<TableCell>
+						<Button
+							onClick={() => onSearch(filters)}
+							variant="contained"
+							color="primary"
+							size="small"
+							sx={{ fontSize: 12 }}
+						>
+							<SearchIcon />
+						</Button>
+					</TableCell>
+					<ProductFilter
+						headerFilters={columns}
+						onChange={(key, value) => {
+							setFilters((prev) => ({ ...prev, [key]: value }));
+						}}
+					/>
+				</TableRow>
+
 				{rows.map((row) => (
 					<TableRow key={row.id} hover role="checkbox" tabIndex={-1}>
 						{showActions && (
@@ -129,32 +138,49 @@ const ProductTable = ({
 
 						{/* Category Name */}
 						<TableCell align="left">
-							{row.category_name || '-'}
+							{row.category_id || '-'}
 						</TableCell>
 
 						{/* Unit Name */}
-						<TableCell align="left">
-							{row.unit_name || '-'}
-						</TableCell>
+						<TableCell align="left">{row.unit_id || '-'}</TableCell>
 
 						{/* Price */}
-						<TableCell align="right">
-							{formatPrice(row.price)}
+						<TableCell align="left">
+							{formatCurrency(row.price)}
 						</TableCell>
 
 						{/* Cost */}
-						<TableCell align="right">
-							{formatPrice(row.cost)}
+						<TableCell align="left">
+							{formatCurrency(row.cost)}
+						</TableCell>
+
+						{/* inventory_mimimux */}
+						<TableCell align="left">
+							{row.minimum_inventory || '-'}
+						</TableCell>
+
+						{/* inventory */}
+						<TableCell align="left">
+							{row.total_quantity || '-'}
 						</TableCell>
 
 						{/* Status */}
 						<TableCell align="center">
-							<Chip
-								label={getStatusLabel(row.status)}
-								color={getStatusColor(row.status)}
-								size="small"
-								variant="outlined"
-							/>
+							{row.is_active === 1 ? (
+								<Chip
+									label="Đang hoạt động"
+									color="success"
+									size="small"
+									variant="outlined"
+								/>
+							) : (
+								<Chip
+									label="Không hoạt động"
+									color="default"
+									size="small"
+									variant="outlined"
+								/>
+							)}
 						</TableCell>
 
 						{/* Created At */}
@@ -216,28 +242,6 @@ const ProductTable = ({
 			</Menu>
 		</>
 	);
-};
-
-ProductTable.propTypes = {
-	columns: PropTypes.arrayOf(
-		PropTypes.shape({
-			key: PropTypes.string.isRequired,
-			label: PropTypes.string.isRequired,
-			minWidth: PropTypes.number,
-			align: PropTypes.string,
-		}),
-	).isRequired,
-	rows: PropTypes.arrayOf(PropTypes.object),
-	pagination: PropTypes.shape({
-		page: PropTypes.number,
-		per_page: PropTypes.number,
-	}),
-	total: PropTypes.number,
-	onPageChange: PropTypes.func,
-	onDelete: PropTypes.func,
-	onEdit: PropTypes.func,
-	onView: PropTypes.func,
-	showActions: PropTypes.bool,
 };
 
 export default React.memo(ProductTable);

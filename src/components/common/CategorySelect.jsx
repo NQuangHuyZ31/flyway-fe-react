@@ -4,7 +4,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import React, { useEffect, useState } from 'react';
 
-const CategoryList = () => {
+const CategoryList = ({ onChange }) => {
 	const [categories, setCategories] = useState([]);
 	const [error, setError] = useState(null);
 
@@ -12,7 +12,6 @@ const CategoryList = () => {
 		try {
 			const res = await CategoryService.getCategories();
 			setCategories(res.data);
-			console.log(res);
 			setError(null);
 		} catch (error) {
 			setError(error.message || 'không thể tải danh mục');
@@ -28,6 +27,7 @@ const CategoryList = () => {
 			id="category"
 			options={categories}
 			autoHighlight
+			onChange={(event, value) => onChange(value?.id || '')}
 			getOptionLabel={(option) => option.name}
 			renderOption={(props, option) => {
 				return (

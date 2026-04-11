@@ -242,8 +242,8 @@ const Input = forwardRef(
 						helperText ||
 						(successMessage && touched ? `✓ ${successMessage}` : '')
 					}
-					startAdornment={startAdornment}
-					endAdornment={endAdornment}
+					startadornment={startAdornment}
+					endadornment={endAdornment}
 					{...props}
 				/>
 			</Box>

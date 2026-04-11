@@ -73,49 +73,6 @@ const Header = ({ onMenuToggle, onThemeToggle, isDarkMode }) => {
 			.slice(0, 2);
 	};
 
-	/**
-	 * Generate breadcrumb items based on current route
-	 * Maps route paths to human-readable labels
-	 */
-	const generateBreadcrumbs = () => {
-		const pathnames = location.pathname.split('/').filter((x) => x);
-
-		const breadcrumbMap = {
-			products: 'Sản phẩm',
-			create: 'Tạo mới',
-			edit: 'Chỉnh sửa',
-			detail: 'Chi tiết',
-			inventory: 'Tồn kho',
-			customers: 'Khách hàng',
-			orders: 'Đơn hàng',
-			quotations: 'Báo giá',
-			warehouse: 'Kho',
-			reports: 'Báo cáo',
-			system: 'Hệ thống',
-		};
-
-		let breadcrumbs = [
-			{ label: 'Trang chủ', path: '/', icon: <HomeIcon /> },
-		];
-
-		let currentPath = '';
-		pathnames.forEach((name, index) => {
-			currentPath += `/${name}`;
-			const label = breadcrumbMap[name] || name;
-			const isLast = index === pathnames.length - 1;
-
-			if (!isLast) {
-				breadcrumbs.push({ label, path: currentPath });
-			} else {
-				breadcrumbs.push({ label, path: null }); // Last item, no click
-			}
-		});
-
-		return breadcrumbs;
-	};
-
-	const breadcrumbs = generateBreadcrumbs();
-
 	return (
 		<>
 			<AppBar position="fixed" className="header">
@@ -214,76 +171,14 @@ const Header = ({ onMenuToggle, onThemeToggle, isDarkMode }) => {
 						</Menu>
 					</Box>
 				</Toolbar>
-
-				{/* Breadcrumb Navigation */}
-				{location.pathname !== '/' && (
-					<Box
-						sx={{
-							px: 2,
-							py: 1,
-							bgcolor:
-								theme.palette.mode === 'dark'
-									? 'rgba(0,0,0,0.2)'
-									: 'rgba(255,255,255,0.1)',
-							borderTop: `1px solid ${theme.palette.divider}`,
-						}}
-					>
-						<Breadcrumbs
-							separator={<NavigateNextIcon fontSize="small" />}
-							aria-label="breadcrumb"
-							sx={{ fontSize: '0.875rem' }}
-						>
-							{breadcrumbs.map((breadcrumb, index) => (
-								<Box
-									key={index}
-									sx={{
-										display: 'flex',
-										alignItems: 'center',
-										cursor: breadcrumb.path
-											? 'pointer'
-											: 'default',
-										color: breadcrumb.path
-											? 'inherit'
-											: theme.palette.text.secondary,
-										'&:hover': breadcrumb.path
-											? {
-													textDecoration: 'underline',
-											  }
-											: {},
-									}}
-									onClick={() => {
-										if (breadcrumb.path) {
-											navigate(breadcrumb.path);
-										}
-									}}
-								>
-									{breadcrumb.icon}
-									<Typography
-										sx={{ ml: breadcrumb.icon ? 1 : 0 }}
-										variant="body2"
-									>
-										{breadcrumb.label}
-									</Typography>
-								</Box>
-							))}
-						</Breadcrumbs>
-					</Box>
-				)}
 			</AppBar>
 			{/* Spacer for fixed AppBar - accounting for both toolbar and breadcrumb */}
 			<Box sx={{ height: 64 }} /> {/* Header toolbar height */}
-			{location.pathname !== '/' && <Box sx={{ height: 40 }} />}{' '}
+			{location.pathname == '/' && <Box sx={{ height: 40 }} />}{' '}
 			{/* Breadcrumb height */}
 		</>
 	);
 };
-
-Header.propTypes = {
-	onMenuToggle: PropTypes.func.isRequired,
-	onThemeToggle: PropTypes.func,
-	isDarkMode: PropTypes.bool,
-};
-
 Header.defaultProps = {
 	onThemeToggle: () => {},
 	isDarkMode: false,

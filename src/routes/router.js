@@ -1,9 +1,8 @@
 import LoginPage from '../pages/Auth/LoginPage';
 import Dashboard from '../pages/Dashboard/Dashboard';
-import ProductList from '../pages/Products/ProductList';
 import ProductCreate from '../pages/Products/ProductCreate';
-import ProductEdit from '../pages/Products/ProductEdit';
 import ProductDetail from '../pages/Products/ProductDetail';
+import ProductsPage from '../pages/Products/ProductsPage';
 
 const publicRoute = [
 	// { path: '/', component: Home },
@@ -13,9 +12,9 @@ const publicRoute = [
 const privateRoute = [
 	{ path: '/', component: Dashboard },
 	// product routes
-	{ path: '/products', component: ProductList },
+	{ path: '/products', component: ProductsPage },
 	{ path: '/products/create', component: ProductCreate },
-	{ path: '/products/:id/edit', component: ProductEdit },
+	{ path: '/products/:id/edit', component: ProductCreate },
 	{ path: '/products/:id/detail', component: ProductDetail },
 	// customer routes
 	// { path: '/customer', component: CustomerList },

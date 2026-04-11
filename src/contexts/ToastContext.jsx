@@ -13,11 +13,11 @@ export const ToastProvider = ({ children }) => {
 		open: false,
 		message: '',
 		severity: 'info', // 'success', 'error', 'warning', 'info'
-		autoHideDuration: 6000,
+		autoHideDuration: 3000,
 	});
 
 	const showToast = useCallback(
-		(message, severity = 'info', duration = 6000) => {
+		(message, severity = 'info', duration = 3000) => {
 			setToast({
 				open: true,
 				message,

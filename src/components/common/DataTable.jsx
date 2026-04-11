@@ -7,8 +7,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import { Typography } from '@mui/material';
 
 function DataTable({
+	tableTitle = '',
 	columns = [],
 	pagination = { page: 0, per_page: 15 },
 	total = 0,
@@ -47,6 +49,19 @@ function DataTable({
 			>
 				<Table stickyHeader aria-label="sticky table">
 					<TableHead>
+						<TableRow>
+							<TableCell colSpan={columns.length}>
+								<Typography
+									sx={{
+										color: 'black',
+										fontWeight: 600,
+										fontSize: '18px',
+									}}
+								>
+									{tableTitle}
+								</Typography>
+							</TableCell>
+						</TableRow>
 						<TableRow>
 							{showActions && (
 								<TableCell
