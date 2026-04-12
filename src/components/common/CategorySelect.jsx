@@ -1,10 +1,9 @@
 import CategoryService from '@/api/services/categoryService';
-import { Box } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import React, { useEffect, useState } from 'react';
 
-const CategoryList = ({ onChange }) => {
+const CategoryList = ({ onChange, value }) => {
 	const [categories, setCategories] = useState([]);
 	const [error, setError] = useState(null);
 
@@ -24,19 +23,15 @@ const CategoryList = ({ onChange }) => {
 
 	return (
 		<Autocomplete
-			id="category"
 			options={categories}
-			autoHighlight
-			onChange={(event, value) => onChange(value?.id || '')}
-			getOptionLabel={(option) => option.name}
-			renderOption={(props, option) => {
-				return (
-					<Box key={option.id} component="li" {...props}>
-						{option.name}
-					</Box>
-				);
+			value={categories.find((c) => c.id === value) || null}
+			getOptionLabel={(option) => option?.name || ''}
+			onChange={(e, newValue) => {
+				onChange(newValue?.id ?? null);
 			}}
-			renderInput={(params) => <TextField {...params} label="Danh mục" />}
+			renderInput={(params) => (
+				<TextField {...params} label="Danh mục" size="small" />
+			)}
 		/>
 	);
 };
