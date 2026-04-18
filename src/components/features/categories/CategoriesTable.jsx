@@ -1,16 +1,35 @@
+// src/components/features/categories/CategoriesFeature.jsx
+// Categories Feature - Feature Layer
+// Handles business logic, local state, and coordinates sub-components
+
 import React, { useState } from 'react';
-import { TableCell, TableRow, Chip } from '@mui/material';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableRow,
+	TablePagination,
+	Chip,
+	Box,
+	Paper,
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import DataTable from '../../common/DataTable';
-import { Link, useNavigate } from 'react-router-dom';
-import { formatCurrency } from '../../../helpers/formatHelper';
 import Button from '../../common/Button';
 import DynamicFilter from '../../common/DynamicFilter';
 import EntityActionMenu from '../../common/EntityActionMenu';
+import DataTable from '../../common/DataTable';
 
-const ProductTable = ({
-	products = [],
+/**
+ * Categories Feature Component
+ * Feature Layer: Renders category list with inline filters
+ * State: Filter inputs (tempFilters)
+ * Event handlers: Search, Clear, Pagination, Edit, Delete
+ */
+const CategoriesTable = ({
+	categories = [],
 	columns = [],
 	headerFilters = [],
 	pagination = { page: 0, per_page: 15 },
@@ -19,56 +38,52 @@ const ProductTable = ({
 	isLoading = false,
 	showActions = true,
 	onPageChange,
+	onEdit,
 	onDelete,
 	onView,
 	onSearchfilter,
 	onClearFilters,
 }) => {
-	/**
-	 * Handle edit: Navigate to edit page
-	 */
-	const [tempFilters, setTempFilters] = useState(filters);
+	const [tempFilters, setTempFilters] = useState({});
 
+	/**
+	 * Handle filter input change
+	 */
 	const handleFilterChange = (key, value) => {
 		setTempFilters((prev) => ({
 			...prev,
 			[key]: value,
 		}));
 	};
-	console.log(tempFilters);
 
-	const navigate = useNavigate();
-	const handleEdit = (product) => {
-		navigate(`/products/${product.id}/edit`);
+	/**
+	 * Handle search with filters
+	 */
+	const handleSearchFilter = () => {
+		onSearchfilter(tempFilters);
 	};
 
 	/**
-	 * Handle view: Navigate to detail page
+	 * Handle clear filters
 	 */
-	const handleViewProduct = (product) => {
-		if (onView) {
-			onView(product.id);
-		} else {
-			navigate(`/products/${product.id}/detail`);
-		}
+	const handleClearFilters = () => {
+		setTempFilters({});
+		onClearFilters();
 	};
 
 	/**
-	 * Handle delete: Call parent handler
+	 * Handle pagination change
 	 */
-	const handleDeleteProduct = (product) => {
-		if (onDelete) {
-			onDelete(product);
-		}
+	const handlePageChange = (event, newPage) => {
+		onPaginationChange(newPage);
 	};
 
-	// Determine which columns to display (from headerFilters or use defaults)
 	const displayColumns =
 		headerFilters && headerFilters.length > 0 ? headerFilters : columns;
 
 	return (
 		<DataTable
-			tableTitle="Danh sách sản phẩm"
+			tableTitle="Danh sách danh mục"
 			columns={displayColumns}
 			total={total}
 			pagination={pagination}
@@ -79,7 +94,16 @@ const ProductTable = ({
 			{/* FILTER ROW */}
 			<TableRow>
 				{showActions && (
-					<TableCell align="center" sx={{ minWidth: 100 }}>
+					<TableCell
+						align="center"
+						sx={{
+							minWidth: 100,
+							display: 'flex',
+							gap: 1,
+							flexDirection: 'column',
+							alignItems: 'center',
+						}}
+					>
 						<Button
 							onClick={() => onSearchfilter(tempFilters)}
 							variant="contained"
@@ -111,80 +135,34 @@ const ProductTable = ({
 			</TableRow>
 
 			{/* DATA ROWS */}
-			{products && products.length > 0 ? (
-				products.map((product) => (
-					<TableRow key={product.id} hover>
+			{categories && categories.length > 0 ? (
+				categories.map((category) => (
+					<TableRow key={category.id} hover>
 						{showActions && (
 							<TableCell align="center">
 								<EntityActionMenu
-									row={product}
+									row={category}
 									config={{
-										onEdit: handleEdit,
-										onDelete: handleDeleteProduct,
-										onView: handleViewProduct,
-										actions: ['view', 'edit', 'delete'],
+										onEdit: () => onEdit(category),
+										onDelete: () => onDelete(category),
+										actions: ['edit', 'delete'],
 									}}
 								/>
 							</TableCell>
 						)}
 
-						{/* Product Name */}
-						<TableCell align="left">
-							<Link
-								to={`/products/${product.id}/detail`}
-								style={{
-									textDecoration: 'none',
-									color: '#1976d2',
-									fontWeight: 500,
-									cursor: 'pointer',
-								}}
-								onClick={() => handleViewProduct(product)}
-							>
-								{product.product_name}
-							</Link>
-						</TableCell>
-
-						{/* Product Code */}
-						<TableCell align="left">
-							{product.product_code}
-						</TableCell>
-
-						{/* SKU */}
-						<TableCell align="left">{product.sku}</TableCell>
-
 						{/* Category Name */}
-						<TableCell align="left">
-							{product.category_id || '-'}
-						</TableCell>
+						<TableCell align="left">{category.name}</TableCell>
 
-						{/* Unit Name */}
+						{/* Category Slug */}
 						<TableCell align="left">
-							{product.unit_id || '-'}
-						</TableCell>
-
-						{/* Price */}
-						<TableCell align="left">
-							{formatCurrency(product.price)}
-						</TableCell>
-
-						{/* Cost */}
-						<TableCell align="left">
-							{formatCurrency(product.cost)}
-						</TableCell>
-
-						{/* Minimum Inventory */}
-						<TableCell align="left">
-							{product.minimum_inventory || '-'}
-						</TableCell>
-
-						{/* Total Quantity */}
-						<TableCell align="left">
-							{product.total_quantity || '-'}
+							{category.slug || '-'}
 						</TableCell>
 
 						{/* Status */}
 						<TableCell align="center">
-							{product.is_active === 1 ? (
+							{category.is_active === 1 ||
+							category.is_active === true ? (
 								<Chip
 									label="Đang hoạt động"
 									color="success"
@@ -203,9 +181,9 @@ const ProductTable = ({
 
 						{/* Created At */}
 						<TableCell align="left">
-							{product.created_at
+							{category.created_at
 								? new Date(
-										product.created_at,
+										category.created_at,
 								  ).toLocaleDateString('vi-VN')
 								: '-'}
 						</TableCell>
@@ -225,4 +203,4 @@ const ProductTable = ({
 	);
 };
 
-export default React.memo(ProductTable);
+export default React.memo(CategoriesTable);

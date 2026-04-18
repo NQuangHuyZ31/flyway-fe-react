@@ -13,7 +13,7 @@ export const ToastProvider = ({ children }) => {
 		open: false,
 		message: '',
 		severity: 'info', // 'success', 'error', 'warning', 'info'
-		autoHideDuration: 3000,
+		autoHideDuration: 2000,
 	});
 
 	const showToast = useCallback(

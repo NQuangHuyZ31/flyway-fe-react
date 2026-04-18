@@ -1,499 +1,574 @@
-// src/components/features/products/ProductForm.jsx
-// Reusable Product Form Component for Create and Edit
-
-import React, { useState, useEffect } from 'react';
 import {
 	Box,
-	Grid,
-	Paper,
 	Button,
+	Checkbox,
 	CircularProgress,
-	Alert,
-	Stack,
-	Divider,
+	FormControlLabel,
+	Grid,
+	InputLabel,
+	Paper,
+	TextField,
 	Typography,
 } from '@mui/material';
-import PropTypes from 'prop-types';
-import Input from '../../common/Input';
-import SelectCategory from './SelectCategory';
-import SelectUnit from './SelectUnit';
-import ProductService from '../../../api/services/productService';
-import { useToast } from '../../../contexts/ToastContext';
+import ClearIcon from '@mui/icons-material/Clear';
+import SaveIcon from '@mui/icons-material/Save';
+import { Controller, useForm } from 'react-hook-form';
+import { useState, useRef, useEffect } from 'react';
+import CategorySelect from '../../common/CategorySelect';
+import UnitMeasureSelect from '../../common/UnitMeasureSelect';
+import productService from '../../../api/services/productService';
+import InputCreateForm from '../../common/InputCreateForm';
 
-/**
- * ProductForm Component
- * Reusable form for creating and editing products
- * Supports both create and edit modes with different submit handlers
- *
- * @param {string} mode - 'create' or 'edit'
- * @param {object} initialData - Product data for edit mode
- * @param {function} onSuccess - Callback after successful submit
- * @param {function} onCancel - Callback for cancel action
- * @param {boolean} isLoading - External loading state
- */
 const ProductForm = ({
-	mode = 'create',
-	initialData = null,
-	onSuccess,
-	onCancel,
-	isLoading: externalLoading = false,
+	defaultValues,
+	onSubmit,
+	isSubmitting,
+	onImageChange,
 }) => {
-	// Form state
-	const [formData, setFormData] = useState({
-		product_name: '',
-		product_code: '',
-		sku: '',
-		category_id: '',
-		unit_id: '',
-		price: '',
-		cost: '',
-		description: '',
-		minimum_inventory: '0',
-		status: '1',
+	const [imagePreview, setImagePreview] = useState(null);
+	const fieldRefs = useRef({});
+	const {
+		register,
+		handleSubmit,
+		control,
+		setError,
+		clearErrors,
+		getValues,
+		reset,
+		formState: { errors },
+	} = useForm({
+		defaultValues,
 	});
 
-	const [categories, setCategories] = useState([]);
-	const [units, setUnits] = useState([]);
-	const [errors, setErrors] = useState({});
-	const [touched, setTouched] = useState({});
-	const [isLoading, setIsLoading] = useState(false);
-	const [submitError, setSubmitError] = useState('');
-	const { showToast } = useToast();
-
-	// Initialize form with data for edit mode
-	useEffect(() => {
-		if (mode === 'edit' && initialData) {
-			setFormData({
-				product_name: initialData.product_name || '',
-				product_code: initialData.product_code || '',
-				sku: initialData.sku || '',
-				category_id: initialData.category_id || '',
-				unit_id: initialData.unit_id || '',
-				price: initialData.price || '',
-				cost: initialData.cost || '',
-				description: initialData.description || '',
-				minimum_inventory: initialData.minimum_inventory || '0',
-				status: initialData.status?.toString() || '1',
-			});
-		}
-	}, [mode, initialData]);
-
-	// Fetch categories and units on mount
-	useEffect(() => {
-		const fetchSelectOptions = async () => {
-			try {
-				// For now, use hardcoded data
-				// In production, fetch from API:
-				// const categoriesData = await CategoryService.getCategories();
-				// const unitsData = await UnitService.getUnits();
-
-				// Hardcoded sample data for development
-				setCategories([
-					{ id: 1, category_name: 'Điện tử' },
-					{ id: 2, category_name: 'Quần áo' },
-					{ id: 3, category_name: 'Thực phẩm' },
-					{ id: 4, category_name: 'Đồ gia dụng' },
-				]);
-
-				setUnits([
-					{ id: 1, unit_name: 'Kilograms', unit_code: 'kg' },
-					{ id: 2, unit_name: 'Pieces', unit_code: 'pcs' },
-					{ id: 3, unit_name: 'Boxes', unit_code: 'box' },
-					{ id: 4, unit_name: 'Liters', unit_code: 'ltr' },
-				]);
-			} catch (error) {
-				console.error('Error fetching select options:', error);
-				showToast('Không tải được dữ liệu', 'error');
-			}
-		};
-
-		fetchSelectOptions();
-	}, []);
-
-	// Validation rules
-	const validateForm = () => {
-		const newErrors = {};
-
-		if (!formData.product_name?.trim()) {
-			newErrors.product_name = 'Tên sản phẩm là bắt buộc';
-		}
-		if (!formData.product_code?.trim()) {
-			newErrors.product_code = 'Mã sản phẩm là bắt buộc';
-		}
-		if (!formData.sku?.trim()) {
-			newErrors.sku = 'SKU là bắt buộc';
-		}
-		if (!formData.category_id) {
-			newErrors.category_id = 'Danh mục là bắt buộc';
-		}
-		if (!formData.unit_id) {
-			newErrors.unit_id = 'Đơn vị tính là bắt buộc';
-		}
-		if (!formData.price || isNaN(parseFloat(formData.price))) {
-			newErrors.price = 'Giá là bắt buộc và phải là số';
-		}
-		if (!formData.cost || isNaN(parseFloat(formData.cost))) {
-			newErrors.cost = 'Giá vốn là bắt buộc và phải là số';
-		}
-		if (
-			formData.minimum_inventory &&
-			isNaN(parseFloat(formData.minimum_inventory))
-		) {
-			newErrors.minimum_inventory = 'Tồn kho tối thiểu phải là số';
-		}
-
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
-
-	// Handle input change
-	const handleChange = (e) => {
-		const { name, value } = e.target;
-		setFormData((prev) => ({
-			...prev,
-			[name]: value,
-		}));
-
-		// Clear error for this field when user starts typing
-		if (touched[name]) {
-			setErrors((prev) => {
-				const newErrors = { ...prev };
-				delete newErrors[name];
-				return newErrors;
-			});
+	const handleImageChange = (e) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				setImagePreview(reader.result);
+				// Call parent callback if provided
+				if (onImageChange) {
+					onImageChange(file);
+				}
+			};
+			reader.readAsDataURL(file);
 		}
 	};
 
-	// Handle select change
-	const handleSelectChange = (name, value) => {
-		setFormData((prev) => ({
-			...prev,
-			[name]: value,
-		}));
-
-		// Clear error for this field
-		if (touched[name]) {
-			setErrors((prev) => {
-				const newErrors = { ...prev };
-				delete newErrors[name];
-				return newErrors;
-			});
-		}
-	};
-
-	// Handle field blur
-	const handleBlur = (e) => {
-		const { name } = e.target;
-		setTouched((prev) => ({
-			...prev,
-			[name]: true,
-		}));
-	};
-
-	// Handle form submit
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-
-		if (!validateForm()) {
-			return;
-		}
-
-		setIsLoading(true);
-		setSubmitError('');
+	// Check dulicate when blurring product code or SKU fields
+	const handleCheckDuplicate = async (field, value) => {
+		if (!value) return; // Skip if value is empty
 
 		try {
-			// Prepare data for API (convert string numbers to actual numbers)
-			const dataToSubmit = {
-				...formData,
-				price: parseFloat(formData.price),
-				cost: parseFloat(formData.cost),
-				minimum_inventory: parseInt(formData.minimum_inventory) || 0,
-				category_id: parseInt(formData.category_id),
-				unit_id: parseInt(formData.unit_id),
-				status: parseInt(formData.status),
-			};
+			const res = await productService.checkDuplicate(field, value);
 
-			if (mode === 'create') {
-				await ProductService.createProduct(dataToSubmit);
-				showToast('Tạo sản phẩm thành công', 'success');
+			if (res.data.is_duplicate) {
+				setError(field, {
+					message: res.message || 'Giá trị này đã tồn tại',
+				});
+				fieldRefs.current[field]?.focus();
 			} else {
-				await ProductService.updateProduct(
-					initialData.id,
-					dataToSubmit,
-				);
-				showToast('Cập nhật sản phẩm thành công', 'success');
+				clearErrors(field);
 			}
-
-			onSuccess?.();
 		} catch (error) {
-			const errorMessage =
-				error.message || 'Có lỗi xảy ra, vui lòng thử lại';
-			setSubmitError(errorMessage);
-			showToast(errorMessage, 'error');
-		} finally {
-			setIsLoading(false);
+			setError(field, {
+				message: 'Lỗi kiểm tra giá trị trùng lặp',
+			});
 		}
 	};
 
-	const isSubmitting = isLoading || externalLoading;
-
 	return (
-		<Paper
-			elevation={0}
-			sx={{
-				p: { xs: 2, md: 4 },
-				bgcolor: 'white',
-				maxWidth: 1400,
-				mx: 'auto',
-				width: '100%',
-			}}
-		>
-			<form onSubmit={handleSubmit}>
-				{/* Header */}
-				<Box sx={{ mb: 3 }}>
+		/* Form */
+		<form onSubmit={handleSubmit(onSubmit)}>
+			{/* ========== SECTION 1: BASIC INFORMATION ========== */}
+			<Box sx={{ mb: 2 }}>
+				<Paper sx={{ p: 3, bgcolor: '#f9f9f9' }}>
 					<Typography
 						variant="h6"
-						sx={{ color: '#1a1a1a', fontWeight: 600 }}
+						fontWeight={600}
+						sx={{ mb: 3, color: 'black' }}
 					>
-						{mode === 'create'
-							? 'Tạo Sản Phẩm Mới'
-							: 'Chỉnh Sửa Sản Phẩm'}
-					</Typography>
-				</Box>
-
-				<Divider sx={{ mb: 3 }} />
-
-				{/* Error Alert */}
-				{submitError && (
-					<Alert severity="error" sx={{ mb: 2 }}>
-						{submitError}
-					</Alert>
-				)}
-
-				{/* Form Sections */}
-
-				{/* Basic Information Section */}
-				<Box sx={{ mb: 4 }}>
-					<Typography
-						variant="subtitle2"
-						sx={{
-							fontWeight: 600,
-							color: '#4B5563',
-							mb: 2,
-						}}
-					>
-						Thông Tin Cơ Bản
+						Thông tin cơ bản
 					</Typography>
 
 					<Grid container spacing={2}>
-						{/* Product Name */}
-						<Grid item xs={12} sm={6}>
-							<Input
-								label="Tên Sản Phẩm"
-								name="product_name"
-								value={formData.product_name}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								placeholder="Nhập tên sản phẩm"
-								error={!!errors.product_name}
-								errorMessage={errors.product_name}
-								required
-								fullWidth
-							/>
+						{/* Row 1: Product Name, Code, Category, Unit, SKU */}
+						<Grid size={6} spacing={5}>
+							<Box sx={{ width: '70%' }}>
+								{/* Mã sản phẩm */}
+								<InputCreateForm
+									label={'Mã sản phẩm'}
+									name={'product_code'}
+									register={register}
+									rules={{
+										required: 'Mã sản phẩm là bắt buộc',
+										pattern: {
+											value: /^PRD-[A-Za-z0-9]+$/,
+											message:
+												'Mã phải có dạng PRD-xxx (chỉ chữ và số)',
+										},
+									}}
+									errors={errors}
+									fieldRefs={fieldRefs}
+									placeholder={'Nhập mã sản phẩm'}
+									handleCheckDuplicate={handleCheckDuplicate}
+								/>
+
+								{/* Tên sản phẩm */}
+								<InputCreateForm
+									label={'Tên sản phẩm'}
+									name={'product_name'}
+									register={register}
+									rules={{
+										required: 'Tên sản phẩm là bắt buộc',
+									}}
+									errors={errors}
+									fieldRefs={fieldRefs}
+									placeholder={'Nhập tên sản phẩm'}
+								/>
+
+								{/* SKU */}
+								<InputCreateForm
+									label={'SKU'}
+									name={'sku'}
+									register={register}
+									rules={{
+										required: 'SKU là bắt buộc',
+									}}
+									errors={errors}
+									fieldRefs={fieldRefs}
+									placeholder={'Nhập SKU'}
+									handleCheckDuplicate={handleCheckDuplicate}
+								/>
+							</Box>
 						</Grid>
 
-						{/* Product Code */}
-						<Grid item xs={12} sm={6}>
-							<Input
-								label="Mã Sản Phẩm"
-								name="product_code"
-								value={formData.product_code}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								placeholder="Ví dụ: PRD001"
-								error={!!errors.product_code}
-								errorMessage={errors.product_code}
-								required
-								fullWidth
-							/>
+						<Grid size={6} spacing={5}>
+							<Box sx={{ width: '70%' }}>
+								{/* Danh mục */}
+								<Box
+									sx={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: 3,
+										mb: 2,
+									}}
+								>
+									<InputLabel
+										sx={{
+											textWrap: 'nowrap',
+											overflow: 'unset',
+											minWidth: 120,
+										}}
+									>
+										Danh mục
+									</InputLabel>
+									<Controller
+										name="category_id"
+										control={control}
+										rules={{
+											required: 'Danh mục là bắt buộc',
+											validate: (value) =>
+												(!!value && value !== '') ||
+												'Vui lòng chọn danh mục',
+										}}
+										render={({ field }) => (
+											<CategorySelect
+												{...field}
+												error={!!errors.category_id}
+												helperText={
+													errors.category_id?.message
+												}
+												inputRef={(ref) => {
+													if (ref)
+														fieldRefs.current.category_id =
+															ref?.querySelector(
+																'input',
+															);
+												}}
+											/>
+										)}
+									/>
+								</Box>
+
+								{/* Đơn vị */}
+								<Box
+									sx={{
+										display: 'flex',
+										alignItems: 'center',
+										gap: 3,
+										mb: 2,
+									}}
+								>
+									<InputLabel
+										sx={{
+											textWrap: 'nowrap',
+											overflow: 'unset',
+											minWidth: 120,
+										}}
+									>
+										Đơn vị
+									</InputLabel>
+									<Controller
+										name="unit_id"
+										control={control}
+										rules={{
+											required: 'Đơn vị là bắt buộc',
+											validate: (value) =>
+												(!!value && value !== '') ||
+												'Vui lòng chọn đơn vị',
+										}}
+										render={({ field }) => (
+											<UnitMeasureSelect
+												{...field}
+												error={!!errors.unit_id}
+												helperText={
+													errors.unit_id?.message
+												}
+												inputRef={(ref) => {
+													if (ref)
+														fieldRefs.current.unit_id =
+															ref?.querySelector(
+																'input',
+															);
+												}}
+											/>
+										)}
+									/>
+								</Box>
+							</Box>
 						</Grid>
 
-						{/* SKU */}
-						<Grid item xs={12} sm={6}>
-							<Input
-								label="SKU"
-								name="sku"
-								value={formData.sku}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								placeholder="Mã SKU"
-								error={!!errors.sku}
-								errorMessage={errors.sku}
-								required
-								fullWidth
-							/>
-						</Grid>
-
-						{/* Status */}
-						<Grid item xs={12} sm={6}>
-							<Input
-								label="Trạng Thái"
-								name="status"
-								type="select"
-								value={formData.status}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								required
-								fullWidth
-							/>
-						</Grid>
-
-						{/* Description */}
-						<Grid item xs={12}>
-							<Input
-								label="Mô Tả"
-								name="description"
-								value={formData.description}
-								onChange={handleChange}
-								placeholder="Mô tả chi tiết sản phẩm"
-								multiline
-								rows={3}
-								fullWidth
-							/>
+						{/* Row 2: Status Checkbox + Description spanning right side */}
+						<Grid size={12}>
+							<Box
+								sx={{
+									display: 'flex',
+									flexDirection: 'column',
+									gap: 1,
+								}}
+							>
+								<Controller
+									name="is_active"
+									control={control}
+									render={({ field }) => (
+										<FormControlLabel
+											control={
+												<Checkbox
+													{...field}
+													checked={field.value}
+												/>
+											}
+											label="Sản phẩm đang hoạt động"
+										/>
+									)}
+								/>
+							</Box>
 						</Grid>
 					</Grid>
-				</Box>
+				</Paper>
+			</Box>
 
-				<Divider sx={{ my: 3 }} />
-
-				{/* Category & Unit Section */}
-				<Box sx={{ mb: 4 }}>
-					<Typography
-						variant="subtitle2"
+			{/* ========== SECTION 2: SPECIFICATIONS (QUY CÁCH SẢN PHẨM) ========== */}
+			<Box sx={{ mb: 2 }}>
+				<Paper sx={{ p: 3, bgcolor: '#f9f9f9' }}>
+					<Box
 						sx={{
-							fontWeight: 600,
-							color: '#4B5563',
-							mb: 2,
+							display: 'flex',
+							alignItems: 'center',
+							gap: 2,
+							mb: 3,
 						}}
 					>
-						Phân Loại Và Đơn Vị
-					</Typography>
+						<Typography variant="h6" fontWeight={600}>
+							Thông tin tồn kho
+						</Typography>
+					</Box>
 
 					<Grid container spacing={2}>
-						{/* Category */}
-						<Grid item xs={12} sm={6}>
-							<SelectCategory
-								label="Danh Mục"
-								value={formData.category_id}
-								onChange={(value) =>
-									handleSelectChange('category_id', value)
-								}
-								onBlur={handleBlur}
-								error={!!errors.category_id}
-								helperText={errors.category_id}
-								categories={categories}
-								required
-								fullWidth
-							/>
-						</Grid>
-
-						{/* Unit */}
-						<Grid item xs={12} sm={6}>
-							<SelectUnit
-								label="Đơn Vị Tính"
-								value={formData.unit_id}
-								onChange={(value) =>
-									handleSelectChange('unit_id', value)
-								}
-								onBlur={handleBlur}
-								error={!!errors.unit_id}
-								helperText={errors.unit_id}
-								units={units}
-								required
-								fullWidth
-							/>
-						</Grid>
-					</Grid>
-				</Box>
-
-				<Divider sx={{ my: 3 }} />
-
-				{/* Pricing Section */}
-				<Box sx={{ mb: 4 }}>
-					<Typography
-						variant="subtitle2"
-						sx={{
-							fontWeight: 600,
-							color: '#4B5563',
-							mb: 2,
-						}}
-					>
-						Giá Cả Và Tồn Kho
-					</Typography>
-
-					<Grid container spacing={2}>
-						{/* Price */}
-						<Grid item xs={12} sm={6}>
-							<Input
-								label="Giá Bán"
-								name="price"
-								type="number"
-								value={formData.price}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								placeholder="0"
-								error={!!errors.price}
-								errorMessage={errors.price}
-								inputProps={{ step: '0.01', min: '0' }}
-								required
-								fullWidth
-							/>
-						</Grid>
-
-						{/* Cost */}
-						<Grid item xs={12} sm={6}>
-							<Input
-								label="Giá Vốn"
-								name="cost"
-								type="number"
-								value={formData.cost}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								placeholder="0"
-								error={!!errors.cost}
-								errorMessage={errors.cost}
-								inputProps={{ step: '0.01', min: '0' }}
-								required
-								fullWidth
-							/>
-						</Grid>
-
 						{/* Minimum Inventory */}
-						<Grid item xs={12} sm={6}>
-							<Input
-								label="Tồn Kho Tối Thiểu"
-								name="minimum_inventory"
-								type="number"
-								value={formData.minimum_inventory}
-								onChange={handleChange}
-								onBlur={handleBlur}
-								placeholder="0"
-								error={!!errors.minimum_inventory}
-								errorMessage={errors.minimum_inventory}
-								inputProps={{ step: '1', min: '0' }}
-								fullWidth
-							/>
+						<Grid size={6}>
+							<Box sx={{ width: '70%' }}>
+								<InputCreateForm
+									label={'Tồn kho tối thiểu'}
+									name={'minimum_inventory'}
+									type="number"
+									register={register}
+									rules={{
+										required:
+											'Tồn kho tối thiểu là bắt buộc',
+										min: {
+											value: 1,
+											message:
+												'Tồn kho tối thiểu phải lớn hơn hoặc bằng 1',
+										},
+									}}
+									errors={errors}
+									fieldRefs={fieldRefs}
+									placeholder={'Nhập tồn kho tối thiểu'}
+								/>
+							</Box>
+						</Grid>
+
+						<Grid size={6}>
+							<Box sx={{ width: '70%' }}>
+								<InputCreateForm
+									label={'Tồn kho hiện tại'}
+									name={'total_quantity'}
+									type="number"
+									register={register}
+									errors={errors}
+									fieldRefs={fieldRefs}
+									placeholder={'Nhập tồn kho hiện tại'}
+								/>
+							</Box>
 						</Grid>
 					</Grid>
-				</Box>
+				</Paper>
+			</Box>
 
-				<Divider sx={{ my: 3 }} />
+			{/* ========== SECTION 3: PRICING (THÔNG TIN GIÁ CẢ) ========== */}
+			<Box sx={{ mb: 2 }}>
+				<Paper sx={{ p: 3, bgcolor: '#f9f9f9' }}>
+					<Box
+						sx={{
+							display: 'flex',
+							alignItems: 'center',
+							gap: 2,
+							mb: 3,
+						}}
+					>
+						<Typography variant="h6" fontWeight={600}>
+							Thông tin giá cả
+						</Typography>
+					</Box>
 
-				{/* Action Buttons */}
-				<Stack direction="row" spacing={2} justifyContent="flex-end">
+					<Grid container spacing={2}>
+						{/* Cost Price */}
+						<Grid size={6}>
+							<Box sx={{ width: '70%' }}>
+								<InputCreateForm
+									label={'Giá vốn'}
+									name={'cost'}
+									type="number"
+									register={register}
+									rules={{
+										required: 'Giá vốn là bắt buộc',
+										min: {
+											value: 1,
+											message: 'Giá vốn phải lớn hơn 0',
+										},
+									}}
+									errors={errors}
+									fieldRefs={fieldRefs}
+									placeholder={'Nhập giá vốn'}
+									inputProps={{
+										step: 1000,
+									}}
+									InputProps={{
+										endAdornment: (
+											<Box
+												sx={{
+													position: 'absolute',
+													right: 50,
+													color: '#666',
+													fontSize: '16px',
+												}}
+											>
+												đ
+											</Box>
+										),
+									}}
+								/>
+							</Box>
+						</Grid>
+
+						{/* Sale Price */}
+						<Grid size={6}>
+							<Box sx={{ position: 'relative', width: '70%' }}>
+								<InputCreateForm
+									label={'Giá bán'}
+									name={'price'}
+									type="number"
+									register={register}
+									rules={{
+										required: 'Giá bán là bắt buộc',
+										min: {
+											value: 1,
+											message: 'Giá bán phải lớn hơn 0',
+										},
+										validate: (value) => {
+											const constValue = parseFloat(
+												getValues('cost'),
+											);
+											if (value < constValue) {
+												return 'Giá bán phải lớn hơn giá vốn';
+											}
+										},
+									}}
+									errors={errors}
+									fieldRefs={fieldRefs}
+									placeholder={'Nhập giá bán'}
+									inputProps={{
+										step: 1000,
+									}}
+									InputProps={{
+										endAdornment: (
+											<Box
+												sx={{
+													position: 'absolute',
+													right: 50,
+													color: '#666',
+													fontSize: '16px',
+												}}
+											>
+												đ
+											</Box>
+										),
+									}}
+								/>
+							</Box>
+						</Grid>
+					</Grid>
+				</Paper>
+			</Box>
+
+			{/* ========== SECTION 4: ADDITIONAL INFORMATION (THÔNG TIN BỔ SUNG) ========== */}
+			<Box sx={{ mb: 2 }}>
+				<Paper sx={{ p: 3, bgcolor: '#f9f9f9' }}>
+					<Box
+						sx={{
+							display: 'flex',
+							alignItems: 'center',
+							gap: 2,
+							mb: 3,
+						}}
+					>
+						<Typography variant="h6" fontWeight={600}>
+							Thông tin bổ sung
+						</Typography>
+					</Box>
+
+					<Grid container spacing={3}>
+						{/* Description */}
+						<Grid size={12}>
+							<InputCreateForm
+								label={'Mô tả sản phẩm'}
+								name={'description'}
+								register={register}
+								errors={errors}
+								fieldRefs={fieldRefs}
+								placeholder={'Nhập mô tả sản phẩm'}
+								multiline
+								rows={4}
+								flexColumn={true}
+							/>
+						</Grid>
+
+						{/* Product Image */}
+						<Grid size={12}>
+							<Box
+								sx={{
+									display: 'flex',
+									flexDirection: 'column',
+									gap: 2,
+								}}
+							>
+								<InputLabel
+									sx={{
+										textWrap: 'nowrap',
+										overflow: 'unset',
+									}}
+								>
+									Hình ảnh sản phẩm
+								</InputLabel>
+								<Box
+									sx={{
+										border: '2px dashed #ccc',
+										borderRadius: 1,
+										p: 2,
+										textAlign: 'center',
+										cursor: 'pointer',
+										transition: 'all 0.3s',
+										'&:hover': {
+											borderColor: '#1976d2',
+											bgcolor: '#f5f5f5',
+										},
+									}}
+									component="label"
+								>
+									<input
+										type="file"
+										accept="image/*"
+										onChange={handleImageChange}
+										style={{ display: 'none' }}
+										id="product_image"
+									/>
+									<Typography
+										variant="body2"
+										color="textSecondary"
+									>
+										Chọn hình ảnh hoặc kéo thả file vào đây
+									</Typography>
+									<Typography
+										variant="caption"
+										color="textSecondary"
+									>
+										(Hỗ trợ PNG, JPG, GIF)
+									</Typography>
+								</Box>
+
+								{/* Image Preview */}
+								{imagePreview && (
+									<Box
+										sx={{
+											mt: 2,
+											p: 2,
+											border: '1px solid #e0e0e0',
+											borderRadius: 1,
+											bgcolor: '#fafafa',
+											textAlign: 'center',
+										}}
+									>
+										<Typography
+											variant="subtitle2"
+											sx={{ mb: 1 }}
+										>
+											Xem trước hình ảnh:
+										</Typography>
+										<img
+											src={imagePreview}
+											alt="Product preview"
+											style={{
+												maxWidth: '100%',
+												maxHeight: '300px',
+												borderRadius: '4px',
+											}}
+										/>
+									</Box>
+								)}
+							</Box>
+						</Grid>
+					</Grid>
+				</Paper>
+			</Box>
+
+			{/* ========== ACTION BUTTONS ========== */}
+			<Grid item xs={12}>
+				<Box
+					sx={{
+						display: 'flex',
+						gap: 2,
+						justifyContent: 'flex-end',
+					}}
+				>
 					<Button
 						variant="outlined"
-						onClick={onCancel}
+						startIcon={<ClearIcon />}
+						onClick={() => {
+							if (reset) reset();
+							setImagePreview(null);
+						}}
 						disabled={isSubmitting}
 					>
 						Hủy
@@ -501,30 +576,24 @@ const ProductForm = ({
 					<Button
 						variant="contained"
 						color="primary"
+						startIcon={<SaveIcon />}
 						type="submit"
 						disabled={isSubmitting}
-						startIcon={
-							isSubmitting && <CircularProgress size={20} />
-						}
+						sx={{ position: 'relative' }}
 					>
-						{isSubmitting
-							? 'Đang xử lý...'
-							: mode === 'create'
-							? 'Tạo'
-							: 'Cập Nhật'}
+						{isSubmitting ? (
+							<>
+								<CircularProgress size={20} sx={{ mr: 1 }} />{' '}
+								Đang lưu...
+							</>
+						) : (
+							'Lưu sản phẩm'
+						)}
 					</Button>
-				</Stack>
-			</form>
-		</Paper>
+				</Box>
+			</Grid>
+		</form>
 	);
-};
-
-ProductForm.propTypes = {
-	mode: PropTypes.oneOf(['create', 'edit']),
-	initialData: PropTypes.object,
-	onSuccess: PropTypes.func,
-	onCancel: PropTypes.func,
-	isLoading: PropTypes.bool,
 };
 
 export default ProductForm;

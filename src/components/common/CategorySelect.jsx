@@ -1,19 +1,19 @@
-import CategoryService from '@/api/services/categoryService';
+import categoryService from '@/api/services/categoryService';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import React, { useEffect, useState } from 'react';
 
-const CategoryList = ({ onChange, value }) => {
+const CategoryList = ({ onChange, value, error, helperText }) => {
 	const [categories, setCategories] = useState([]);
-	const [error, setError] = useState(null);
+	const [loadError, setLoadError] = useState(null);
 
 	const getCategory = async () => {
 		try {
-			const res = await CategoryService.getCategories();
-			setCategories(res.data);
-			setError(null);
-		} catch (error) {
-			setError(error.message || 'không thể tải danh mục');
+			const res = await categoryService.getCategories();
+			setCategories(res);
+			setLoadError(null);
+		} catch (err) {
+			setLoadError(err.message || 'không thể tải danh mục');
 		}
 	};
 
@@ -23,6 +23,7 @@ const CategoryList = ({ onChange, value }) => {
 
 	return (
 		<Autocomplete
+			fullWidth
 			options={categories}
 			value={categories.find((c) => c.id === value) || null}
 			getOptionLabel={(option) => option?.name || ''}
@@ -30,7 +31,14 @@ const CategoryList = ({ onChange, value }) => {
 				onChange(newValue?.id ?? null);
 			}}
 			renderInput={(params) => (
-				<TextField {...params} label="Danh mục" size="small" />
+				<TextField
+					{...params}
+					label="Danh mục"
+					size="small"
+					fullWidth
+					error={error}
+					helperText={helperText}
+				/>
 			)}
 		/>
 	);

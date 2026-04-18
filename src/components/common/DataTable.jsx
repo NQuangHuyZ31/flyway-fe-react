@@ -68,21 +68,25 @@ function DataTable({
 			>
 				<Table stickyHeader aria-label="sticky table">
 					<TableHead>
-						<TableRow>
-							<TableCell
-								colSpan={columns.length + (showActions ? 1 : 0)}
-							>
-								<Typography
-									sx={{
-										color: 'black',
-										fontWeight: 600,
-										fontSize: '18px',
-									}}
+						{tableTitle && (
+							<TableRow>
+								<TableCell
+									colSpan={
+										columns.length + (showActions ? 1 : 0)
+									}
 								>
-									{tableTitle}
-								</Typography>
-							</TableCell>
-						</TableRow>
+									<Typography
+										sx={{
+											color: 'black',
+											fontWeight: 600,
+											fontSize: '18px',
+										}}
+									>
+										{tableTitle}
+									</Typography>
+								</TableCell>
+							</TableRow>
+						)}
 						<TableRow>
 							{showActions && (
 								<TableCell

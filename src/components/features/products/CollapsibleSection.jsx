@@ -32,19 +32,24 @@ const CollapsibleSection = ({ title, children, defaultOpen = true }) => {
 				{isOpen ? <ExpandLess /> : <ExpandMore />}
 			</Box>
 
-			{isOpen && (
-				<Box
-					sx={{
-						p: 2,
-						bgcolor: 'white',
-						border: '1px solid #e0e0e0',
-						borderTop: 'none',
-						borderRadius: '0 0 4px 4px',
-					}}
-				>
-					{children}
-				</Box>
-			)}
+			<Box
+				sx={{
+					p: 2,
+					bgcolor: 'white',
+					border: '1px solid #e0e0e0',
+					borderTop: 'none',
+					borderRadius: '0 0 4px 4px',
+					display: isOpen ? 'block' : 'none',
+					animation: isOpen ? 'fadeIn 0.3s ease' : 'none',
+					'@keyframes fadeIn': {
+						from: { opacity: 0 },
+						to: { opacity: 1 },
+					},
+					'&:last-child': { mb: 0 },
+				}}
+			>
+				{children}
+			</Box>
 		</Box>
 	);
 };

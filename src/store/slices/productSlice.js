@@ -6,7 +6,7 @@ export const fetchProducts = createAsyncThunk(
 	async (params, { rejectWithValue }) => {
 		try {
 			const response = await ProductService.getProducts(params);
-			return response.data;
+			return response;
 		} catch (error) {
 			return rejectWithValue(
 				error.response?.data?.message || 'Failed to fetch products',
@@ -78,6 +78,7 @@ const initialState = {
 	loadingDetail: false,
 	error: null,
 	pagination: { page: 1, totalPages: 1, total: 0, per_page: 15 },
+	headerFilters: [],
 	filters: { search: '', category: '', status: 'active' },
 };
 
@@ -107,6 +108,8 @@ const productSlice = createSlice({
 				state.items = action.payload.data || [];
 				state.pagination =
 					action.payload.pagination || state.pagination;
+				state.headerFilters =
+					action.payload.header_filter || state.headerFilters;
 			})
 			.addCase(fetchProducts.rejected, (state, action) => {
 				state.loading = false;

@@ -1,56 +1,42 @@
 // src/pages/products/ProductsPage.jsx
 // Products list page with CRUD operations
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Typography, Container, useTheme } from '@mui/material';
+import { Box, Button, Typography, Container } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
-import productService from '../../api/services/productService';
 import { useToast } from '../../contexts/ToastContext';
 import ProductTable from '../../components/features/products/ProductTable';
+import useListData from '../../hooks/useListData';
+import productService from '../../api/services/productService';
+import { fetchProducts, deleteProduct } from '../../store/slices/productSlice';
 
 const ProductsPage = () => {
 	const navigate = useNavigate();
-	const theme = useTheme();
 	const { showToast } = useToast();
-
-	// State management
-	const [products, setProducts] = useState([]);
-	const [headerTable, setHeaderTable] = useState([]);
-	const [isLoading, setIsLoading] = useState(false);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [selectedProduct, setSelectedProduct] = useState(null);
-	const [total, setTotal] = useState(0);
-	const [filters, setFilters] = useState({
-		per_page: 25,
-		page: 1,
-		filter: {},
-	});
-	console.log('Filters changed:', filters);
-	// Fetch products on mount
-	useEffect(() => {
-		fetchProducts();
-	}, [filters]);
 
-	const fetchProducts = useCallback(async () => {
-		try {
-			setIsLoading(true);
-			const response = await productService.getProducts({
-				...filters,
-			});
-			setProducts(response.data || []);
-			setHeaderTable(response.header_filter || []);
-			setTotal(response.pagination.total || 0);
-		} catch (error) {
-			showToast('Failed to load products', 'error');
-			console.error('Error fetching products:', error);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [filters]);
+	// Consolidate all list logic into one hook
+	const {
+		data: products,
+		loading,
+		error,
+		pagination,
+		filters,
+		mutate,
+		updateTotal,
+		headerFilters,
+		onPaginationChange,
+		onClearFilters,
+		onSearchfilter,
+	} = useListData({
+		fetchDataURL: (params) => productService.getProducts(params),
+		defaultPerPage: 25,
+	});
 
 	const handleDeleteProduct = (product) => {
 		setSelectedProduct(product);
@@ -59,15 +45,21 @@ const ProductsPage = () => {
 
 	const confirmDelete = async () => {
 		if (!selectedProduct) return;
+
+		const oldData = products;
+		// Optimistically update UI
+		mutate((prev) => prev.filter((item) => item.id !== selectedProduct.id));
+
 		try {
 			await productService.deleteProduct(selectedProduct.id);
-			setProducts(products.filter((p) => p.id !== selectedProduct.id));
-			showToast('Product deleted successfully', 'success');
+			showToast('Sản phẩm đã được xóa', 'success');
 
-			setTotal((prevTotal) => prevTotal - 1);
 			setIsDeleteDialogOpen(false);
+			updateTotal(-1); // Decrease total count
 		} catch (error) {
-			showToast('Failed to delete product', 'error');
+			showToast(error.message || 'Xóa sản phẩm thất bại', 'error');
+			// Revert UI on error
+			mutate(oldData);
 		}
 	};
 
@@ -78,20 +70,11 @@ const ProductsPage = () => {
 		try {
 			showToast('Exporting products...', 'info');
 			// TODO: Implement actual export functionality
-			// For now, show a placeholder
-			const csv = products.map((p) => ({
-				'Tên sản phẩm': p.product_name,
-				'Mã sản phẩm': p.product_code,
-				SKU: p.sku,
-				'Danh mục': p.category_name,
-				'Giá bán': p.price,
-			}));
-			console.log('Export data:', csv);
 			showToast('Products exported successfully', 'success');
 		} catch (error) {
 			showToast('Failed to export products', 'error');
 		}
-	}, [products, showToast]);
+	}, [showToast]);
 
 	/**
 	 * Handle importing products from file
@@ -100,15 +83,6 @@ const ProductsPage = () => {
 		// TODO: Open import modal or trigger file input
 		showToast('Import functionality coming soon', 'info');
 	}, [showToast]);
-
-	// Handle clearing filters
-	const handleClearFilters = useCallback(() => {
-		setFilters({
-			per_page: 25,
-			page: 1,
-			filter: {},
-		});
-	}, []);
 
 	return (
 		<Container maxWidth="xl" sx={{ py: 3 }}>
@@ -122,14 +96,12 @@ const ProductsPage = () => {
 						mb: 3,
 					}}
 				>
-					<Box>
-						<Typography
-							variant="body2"
-							sx={{ color: 'text.secondary', mt: 0.5 }}
-						>
-							Tổng cộng: <strong>{total} sản phẩm</strong>
-						</Typography>
-					</Box>
+					<Typography
+						variant="body2"
+						sx={{ color: 'text.secondary' }}
+					>
+						Tổng cộng: <strong>{pagination.total} sản phẩm</strong>
+					</Typography>
 					<Box sx={{ display: 'flex', gap: 1 }}>
 						<Button
 							variant="contained"
@@ -146,7 +118,7 @@ const ProductsPage = () => {
 							size="small"
 							startIcon={<DownloadIcon />}
 							onClick={handleExport}
-							disabled={products.length === 0 || isLoading}
+							disabled={products.length === 0 || loading}
 							sx={{ textTransform: 'none' }}
 						>
 							Xuất
@@ -167,34 +139,27 @@ const ProductsPage = () => {
 
 			{/* Products Table */}
 			<ProductTable
-				rows={products}
-				columns={headerTable}
-				isLoading={isLoading}
+				products={products}
+				columns={headerFilters}
+				isLoading={loading}
 				pagination={{
-					per_page: filters.per_page,
-					page: filters.page,
+					per_page: pagination.per_page,
+					page: pagination.page,
 				}}
-				total={total}
+				total={pagination.total}
+				filters={filters}
+				headerFilters={headerFilters}
 				onDelete={handleDeleteProduct}
 				onView={(id) => navigate(`/products/${id}/detail`)}
-				onSearch={(filters) =>
-					setFilters((prev) => ({
-						...prev,
-						filter: {
-							...prev.filter,
-							...filters,
-						},
-						page: 1,
-					}))
-				}
-				onClear={handleClearFilters}
-				prodFilters={filters.filter}
+				onSearchfilter={onSearchfilter}
+				onClearFilters={onClearFilters}
+				onPageChange={onPaginationChange}
 			/>
 
 			{/* Delete Confirmation Dialog */}
 			<ConfirmDialog
 				open={isDeleteDialogOpen}
-				onClose={() => setIsDeleteDialogOpen(false)}
+				onCancel={() => setIsDeleteDialogOpen(false)}
 				onConfirm={confirmDelete}
 				title="Xác nhận xóa"
 				message={`Bạn có chắc chắn muốn xóa sản phẩm "${selectedProduct?.product_name}"?`}

@@ -14,6 +14,7 @@ const MenuConfig = [
 		submenu: [
 			{ label: 'Sản phẩm', path: '/products' },
 			{ label: 'Danh mục', path: '/categories' },
+			{ label: 'Đơn vị', path: '/units' },
 		],
 	},
 	{

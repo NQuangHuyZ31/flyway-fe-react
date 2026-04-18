@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 import { Navigate } from 'react-router-dom';
-import AuthService from './services/AuthService';
+import AuthService from './services/authService';
 
 const API_BASE_URL =
 	import.meta.env.VITE_API_URL || 'http://localhost:8000/api';

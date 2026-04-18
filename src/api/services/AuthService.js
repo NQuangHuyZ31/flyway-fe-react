@@ -1,4 +1,5 @@
 import axiosInstance from '../axiosConfig';
+import { validateHelper } from '@/helpers/validateHelper';
 
 /**
  * Authentication Service
@@ -15,7 +16,7 @@ const login = async (params) => {
 		const response = await axiosInstance.post('/auth/login', params);
 		return response.data;
 	} catch (error) {
-		const message = error?.message || 'Đăng nhập thất bại';
+		const message = validateHelper(error);
 		throw new Error(message);
 	}
 };
@@ -24,7 +25,7 @@ const logout = async () => {
 	try {
 		await axiosInstance.post('/auth/logout');
 	} catch (error) {
-		const message = error?.message || 'Đăng xuất thất bại';
+		const message = validateHelper(error);
 		throw new Error(message);
 	}
 };
@@ -38,7 +39,7 @@ const refreshAccessToken = async () => {
 		}
 		return response.data;
 	} catch (error) {
-		const message = error?.message || 'Làm mới token thất bại';
+		const message = validateHelper(error);
 		throw new Error(message);
 	}
 };
@@ -49,16 +50,16 @@ const getCurrentUser = async () => {
 		const response = await axiosInstance.get('/me');
 		return response.data;
 	} catch (error) {
-		const message = error?.message || 'Không thể lấy thông tin người dùng';
+		const message = validateHelper(error);
 		throw new Error(message);
 	}
 };
 
-const AuthService = {
+const authService = {
 	login,
 	logout,
 	refreshAccessToken,
 	getCurrentUser,
 };
 
-export default AuthService;
+export default authService;
