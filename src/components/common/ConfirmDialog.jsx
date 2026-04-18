@@ -30,6 +30,7 @@ const ConfirmDialog = ({
 	confirmText = 'Delete',
 	cancelText = 'Cancel',
 	severity = 'error',
+	isSubmitting = false,
 }) => {
 	const theme = useTheme();
 
@@ -56,13 +57,18 @@ const ConfirmDialog = ({
 				<p style={{ marginTop: '12px' }}>{message}</p>
 			</DialogContent>
 			<DialogActions sx={{ p: 2 }}>
-				<Button onClick={onCancel} variant="outlined">
+				<Button
+					onClick={onCancel}
+					variant="outlined"
+					disabled={isSubmitting}
+				>
 					{cancelText}
 				</Button>
 				<Button
 					onClick={onConfirm}
 					variant="contained"
 					color={severity}
+					disabled={isSubmitting}
 				>
 					{confirmText}
 				</Button>

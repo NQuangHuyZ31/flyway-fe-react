@@ -131,10 +131,10 @@ const ProductDetail = () => {
 				</CollapsibleSection>
 			</Box>
 
-			{/* Block: Thông tin batche sản phẩm */}
+			{/* Block: Thông tin lô sản phẩm */}
 			<Box>
 				<CollapsibleSection
-					title="Thông tin batche sản phẩm"
+					title="Thông tin lô sản phẩm"
 					defaultOpen={true}
 				>
 					<ProductBatcheTable productId={productId} />

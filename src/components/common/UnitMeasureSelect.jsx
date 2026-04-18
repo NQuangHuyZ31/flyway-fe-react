@@ -1,20 +1,19 @@
-import { Box } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import React, { useEffect, useState } from 'react';
-import UnitMesureService from '../../api/services/UnitMeasureService';
+import unitMeasureService from '@/api/services/unitMeasureService';
 
-const UnitMeasureSelect = ({ onChange, value }) => {
+const UnitMeasureSelect = ({ onChange, value, error, helperText }) => {
 	const [unitMeasures, setUnitMeasures] = useState([]);
-	const [error, setError] = useState(null);
+	const [loadError, setLoadError] = useState(null);
 
 	const getUnitMeasures = async () => {
 		try {
-			const res = await UnitMesureService.getUnutMeasures();
-			setUnitMeasures(res.data);
-			setError(null);
-		} catch (error) {
-			setError(error.message || 'không thể tải danh mục');
+			const res = await unitMeasureService.getUnitMeasures();
+			setUnitMeasures(res);
+			setLoadError(null);
+		} catch (err) {
+			setLoadError(err.message || 'không thể tải danh mục');
 		}
 	};
 
@@ -24,6 +23,7 @@ const UnitMeasureSelect = ({ onChange, value }) => {
 
 	return (
 		<Autocomplete
+			fullWidth
 			options={unitMeasures}
 			value={unitMeasures.find((u) => u.id === value) || null}
 			getOptionLabel={(option) => option?.name || ''}
@@ -31,7 +31,14 @@ const UnitMeasureSelect = ({ onChange, value }) => {
 				onChange(newValue?.id ?? null);
 			}}
 			renderInput={(params) => (
-				<TextField {...params} label="Đơn vị" size="small" />
+				<TextField
+					{...params}
+					label="Đơn vị"
+					size="small"
+					fullWidth
+					error={error}
+					helperText={helperText}
+				/>
 			)}
 		/>
 	);

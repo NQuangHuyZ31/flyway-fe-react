@@ -14,7 +14,7 @@ import {
 import LoginIcon from '@mui/icons-material/Login';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
-import auth from '../../api/services/AuthService';
+import auth from '@/api/services/authService';
 import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage = () => {
@@ -39,8 +39,8 @@ const LoginPage = () => {
 		try {
 			const res = await auth.login(credentials);
 
-			if (res?.token) {
-				localStorage.setItem('token', res.token);
+			if (res?.data?.token) {
+				localStorage.setItem('token', res.data.token);
 
 				try {
 					const user = await auth.getCurrentUser();
