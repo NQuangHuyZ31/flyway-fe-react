@@ -34,10 +34,7 @@ const refreshAccessToken = async () => {
 	try {
 		// Expected response shape: { token: string }
 		const response = await axiosInstance.post('/auth/refresh');
-		if (response.token) {
-			localStorage.setItem('token', response.token);
-		}
-		return response.data;
+		return response.data.data;
 	} catch (error) {
 		const message = validateHelper(error);
 		throw new Error(message);

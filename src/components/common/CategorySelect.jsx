@@ -1,7 +1,7 @@
 import categoryService from '@/api/services/categoryService';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 const CategoryList = ({ onChange, value, error, helperText }) => {
 	const [categories, setCategories] = useState([]);
@@ -21,11 +21,17 @@ const CategoryList = ({ onChange, value, error, helperText }) => {
 		getCategory();
 	}, []);
 
+	// Find selected category by ID - recalculate when categories or value changes
+	const selectedCategory = useMemo(() => {
+		if (!value || !categories.length) return null;
+		return categories.find((c) => c.id === value) || null;
+	}, [categories, value]);
+
 	return (
 		<Autocomplete
 			fullWidth
 			options={categories}
-			value={categories.find((c) => c.id === value) || null}
+			value={selectedCategory}
 			getOptionLabel={(option) => option?.name || ''}
 			onChange={(e, newValue) => {
 				onChange(newValue?.id ?? null);

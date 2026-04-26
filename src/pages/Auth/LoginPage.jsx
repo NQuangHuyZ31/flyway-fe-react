@@ -56,7 +56,7 @@ const LoginPage = () => {
 			}
 			setError('');
 		} catch (error) {
-			setError(error.message || 'Đăng nhập thất bại');
+			setError(error?.message || 'Đăng nhập thất bại');
 		} finally {
 			setLoading(false);
 		}

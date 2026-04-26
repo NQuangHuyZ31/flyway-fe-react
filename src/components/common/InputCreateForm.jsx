@@ -10,6 +10,7 @@ const InputCreateForm = ({
 	fullWidth = true,
 	errors = {},
 	handleCheckDuplicate,
+	mode = 'create',
 	flexColumn = false,
 	size = 'small',
 	type = 'text',

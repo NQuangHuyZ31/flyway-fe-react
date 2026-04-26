@@ -1,6 +1,6 @@
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import unitMeasureService from '@/api/services/unitMeasureService';
 
 const UnitMeasureSelect = ({ onChange, value, error, helperText }) => {
@@ -21,11 +21,17 @@ const UnitMeasureSelect = ({ onChange, value, error, helperText }) => {
 		getUnitMeasures();
 	}, []);
 
+	// Find selected unit by ID - recalculate when unitMeasures or value changes
+	const selectedUnit = useMemo(() => {
+		if (!value || !unitMeasures.length) return null;
+		return unitMeasures.find((u) => u.id === value) || null;
+	}, [unitMeasures, value]);
+
 	return (
 		<Autocomplete
 			fullWidth
 			options={unitMeasures}
-			value={unitMeasures.find((u) => u.id === value) || null}
+			value={selectedUnit}
 			getOptionLabel={(option) => option?.name || ''}
 			onChange={(e, newValue) => {
 				onChange(newValue?.id ?? null);

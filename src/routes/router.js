@@ -1,6 +1,7 @@
 import LoginPage from '../pages/Auth/LoginPage';
 import Dashboard from '../pages/Dashboard/Dashboard';
 import ProductCreate from '../pages/Products/ProductCreate';
+import ProductEdit from '../pages/Products/ProductEdit';
 import ProductDetail from '../pages/Products/ProductDetail';
 import ProductsPage from '../pages/Products/ProductsPage';
 import CategoriesListPage from '../pages/Categories/CategoriesListPage';
@@ -16,8 +17,9 @@ const privateRoute = [
 	// product routes
 	{ path: '/products', component: ProductsPage },
 	{ path: '/products/create', component: ProductCreate },
-	{ path: '/products/:id/edit', component: ProductCreate },
 	{ path: '/products/:id/detail', component: ProductDetail },
+	{ path: '/products/:id/edit', component: ProductEdit },
+
 	// category routes
 	{ path: '/categories', component: CategoriesListPage },
 	// unit routes

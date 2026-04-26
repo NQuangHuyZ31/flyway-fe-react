@@ -154,12 +154,12 @@ const ProductTable = ({
 
 						{/* Category Name */}
 						<TableCell align="left">
-							{product.category_id || '-'}
+							{product.category.name || '-'}
 						</TableCell>
 
 						{/* Unit Name */}
 						<TableCell align="left">
-							{product.unit_id || '-'}
+							{product.unit.name || '-'}
 						</TableCell>
 
 						{/* Price */}

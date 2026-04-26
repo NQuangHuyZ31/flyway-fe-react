@@ -1,25 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductDetail } from '../../store/slices/productSlice';
 import { Box, Grid, Typography } from '@mui/material';
 import DataRow from '../../components/features/products/DataRow';
 import CollapsibleSection from '../../components/features/products/CollapsibleSection';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ProductDetailHeader from './components/ProductDetailHeader';
 import TextArea from '../../components/common/TextArea';
 import { formatCurrency } from '../../helpers/formatHelper';
 import ProductBatcheTable from '../../components/features/products/ProductBatcheTable';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const ProductDetail = () => {
 	const productId = useParams().id;
 	const dispatch = useDispatch();
 
-	const {
-		selectedProduct: data,
-		loadingDetail,
-		error,
-	} = useSelector((state) => state.products);
+	const { selectedProduct: data, loadingDetail } = useSelector(
+		(state) => state.products,
+	);
 
 	useEffect(() => {
 		if (productId) {
@@ -27,7 +25,6 @@ const ProductDetail = () => {
 		}
 	}, [dispatch, productId]);
 
-	console.log('Product detail data:', data);
 	return (
 		<Box sx={{ p: 2, background: '#f4f6fa', minHeight: '100vh' }}>
 			{/* Product Card */}
@@ -39,7 +36,7 @@ const ProductDetail = () => {
 					title="Thông tin sản phẩm"
 					defaultOpen={true}
 				>
-					<Box container sx={{ display: 'flex', gap: 20 }}>
+					<Box sx={{ display: 'flex', gap: 20 }}>
 						<Grid item xs={6} md={6}>
 							<DataRow
 								label="Mã sản phẩm"
@@ -48,13 +45,13 @@ const ProductDetail = () => {
 							<DataRow label="Mã SKU" value={data?.sku} />
 							<DataRow
 								label="Danh mục"
-								value={data?.category_id}
+								value={data?.category.name || '--'}
 							/>
 						</Grid>
 						<Grid item xs={6} md={6}>
 							<DataRow
 								label="Đơn vị tính"
-								value={data?.unit_id}
+								value={data?.unit.name || '--'}
 							/>
 							<DataRow
 								label="Giá bán"
@@ -77,7 +74,7 @@ const ProductDetail = () => {
 					title="Thông tin tồn kho"
 					defaultOpen={true}
 				>
-					<Box container sx={{ display: 'flex', gap: 20 }}>
+					<Box sx={{ display: 'flex', gap: 20 }}>
 						<Grid item xs={6} md={6}>
 							<DataRow
 								label="Tồn kho tối thiểu"
@@ -97,7 +94,7 @@ const ProductDetail = () => {
 			{/* Block: Thông tin thêm */}
 			<Box>
 				<CollapsibleSection title="Thông tin thêm" defaultOpen={true}>
-					<Box container>
+					<Box>
 						<Typography
 							sx={{ fontWeight: 'bold', color: 'black', mb: 1 }}
 						>
@@ -114,7 +111,7 @@ const ProductDetail = () => {
 					title="Thông tin hệ thống"
 					defaultOpen={true}
 				>
-					<Box container sx={{ display: 'flex', gap: 20 }}>
+					<Box sx={{ display: 'flex', gap: 20 }}>
 						<Grid item xs={6} md={6}>
 							<DataRow
 								label="Ngày tạo"

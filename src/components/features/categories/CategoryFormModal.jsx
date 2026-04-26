@@ -31,7 +31,6 @@ export default function CategoryFormModal({
 	open,
 	onClose,
 	onSave,
-	onSuccess,
 	categoryData = null,
 }) {
 	const { showToast } = useToast();
@@ -80,7 +79,7 @@ export default function CategoryFormModal({
 	 * Handle form submission
 	 */
 	const onSubmit = async (data) => {
-		onSave(data, isEditMode ? categoryData.id : null);
+		await onSave(data, isEditMode ? categoryData.id : null);
 	};
 
 	const handleClose = () => {
@@ -90,8 +89,6 @@ export default function CategoryFormModal({
 			reset();
 		}
 	};
-
-	console.log('errors:', errors);
 
 	return (
 		<Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -168,7 +165,6 @@ export default function CategoryFormModal({
 				<Button
 					variant="contained"
 					color="primary"
-					// onClick={handleSubmit(onSubmit)}
 					type="submit"
 					form="category-form"
 					disabled={isSubmitting}
