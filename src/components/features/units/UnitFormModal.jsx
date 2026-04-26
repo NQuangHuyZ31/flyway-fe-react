@@ -86,15 +86,13 @@ export default function UnitFormModal({
 	 * Handle form submission
 	 */
 	const onSubmit = async (data) => {
-		try {
-			onSave(data, isEditMode ? unitData.id : null);
-		} catch (err) {
-			showToast(err.message || 'Lỗi khi lưu đơn vị', 'error');
-		}
+		await onSave(data, isEditMode ? unitData.id : null);
 	};
 
 	const handleClose = () => {
 		onClose();
+		reset();
+		clearErrors();
 	};
 
 	return (
@@ -106,7 +104,11 @@ export default function UnitFormModal({
 
 			{/* Dialog Content */}
 			<DialogContent dividers sx={{ pt: 2, pb: 4 }}>
-				<form id="unit-form" onSubmit={handleSubmit(onSubmit)}>
+				<form
+					id="unit-form"
+					onSubmit={handleSubmit(onSubmit)}
+					noValidate
+				>
 					{/* Name Field */}
 					<InputCreateForm
 						label={'Tên đơn vị'}
@@ -172,6 +174,7 @@ export default function UnitFormModal({
 					color="secondary"
 					onClick={handleClose}
 					startIcon={<CancelIcon />}
+					disabled={isSubmitting}
 				>
 					Hủy
 				</Button>
@@ -179,9 +182,11 @@ export default function UnitFormModal({
 					variant="contained"
 					color="primary"
 					type="submit"
+					form="unit-form"
+					disabled={isSubmitting}
 					startIcon={<SaveIcon />}
 				>
-					Lưu
+					{isSubmitting ? 'Đang lưu...' : 'Lưu'}
 				</Button>
 			</DialogActions>
 		</Dialog>

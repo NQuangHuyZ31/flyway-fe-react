@@ -24,6 +24,8 @@ const ProductForm = ({
 	onSubmit,
 	isSubmitting,
 	onImageChange,
+	resErrors = {},
+	productId = null,
 }) => {
 	const [imagePreview, setImagePreview] = useState(null);
 	const fieldRefs = useRef({});
@@ -39,6 +41,31 @@ const ProductForm = ({
 	} = useForm({
 		defaultValues,
 	});
+
+	useEffect(() => {
+		if (!resErrors) return;
+
+		Object.entries(resErrors).forEach(([field, messages]) => {
+			setError(field, {
+				type: 'server',
+				message: messages[0],
+			});
+		});
+	}, [resErrors, setError]);
+
+	// Re-sync form with new defaultValues when they change (e.g., after data fetch)
+	useEffect(() => {
+		if (defaultValues) {
+			reset(defaultValues);
+		}
+	}, [defaultValues, reset]);
+
+	// Load existing image preview on edit mode
+	useEffect(() => {
+		if (defaultValues?.product_image_url) {
+			setImagePreview(defaultValues.product_image_url);
+		}
+	}, [defaultValues?.product_image_url]);
 
 	const handleImageChange = (e) => {
 		const file = e.target.files?.[0];
@@ -60,7 +87,11 @@ const ProductForm = ({
 		if (!value) return; // Skip if value is empty
 
 		try {
-			const res = await productService.checkDuplicate(field, value);
+			const res = await productService.checkDuplicate(
+				field,
+				value,
+				productId,
+			);
 
 			if (res.data.is_duplicate) {
 				setError(field, {

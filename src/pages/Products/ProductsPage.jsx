@@ -13,12 +13,12 @@ import ProductTable from '../../components/features/products/ProductTable';
 import useListData from '../../hooks/useListData';
 import productService from '../../api/services/productService';
 import { fetchProducts, deleteProduct } from '../../store/slices/productSlice';
+import { useActionHook } from '@/hooks/useActionHook';
+import { useFormModal } from '@/hooks/useFormModal';
 
 const ProductsPage = () => {
 	const navigate = useNavigate();
 	const { showToast } = useToast();
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-	const [selectedProduct, setSelectedProduct] = useState(null);
 
 	// Consolidate all list logic into one hook
 	const {
@@ -28,6 +28,9 @@ const ProductsPage = () => {
 		pagination,
 		filters,
 		mutate,
+		addItem,
+		updateItem,
+		removeItem,
 		updateTotal,
 		headerFilters,
 		onPaginationChange,
@@ -38,28 +41,22 @@ const ProductsPage = () => {
 		defaultPerPage: 25,
 	});
 
-	const handleDeleteProduct = (product) => {
-		setSelectedProduct(product);
-		setIsDeleteDialogOpen(true);
-	};
+	const { deleteAction } = useActionHook({ addItem, updateItem, removeItem });
+	const deletedFormModal = useFormModal();
 
 	const confirmDelete = async () => {
-		if (!selectedProduct) return;
-
-		const oldData = products;
-		// Optimistically update UI
-		mutate((prev) => prev.filter((item) => item.id !== selectedProduct.id));
+		if (!deletedFormModal.formModal.data) return;
 
 		try {
-			await productService.deleteProduct(selectedProduct.id);
+			await deleteAction(
+				deletedFormModal.formModal.data.id,
+				productService.deleteProduct,
+			);
 			showToast('Sản phẩm đã được xóa', 'success');
 
-			setIsDeleteDialogOpen(false);
-			updateTotal(-1); // Decrease total count
+			deletedFormModal.close();
 		} catch (error) {
 			showToast(error.message || 'Xóa sản phẩm thất bại', 'error');
-			// Revert UI on error
-			mutate(oldData);
 		}
 	};
 
@@ -149,7 +146,7 @@ const ProductsPage = () => {
 				total={pagination.total}
 				filters={filters}
 				headerFilters={headerFilters}
-				onDelete={handleDeleteProduct}
+				onDelete={(product) => deletedFormModal.open(product)}
 				onView={(id) => navigate(`/products/${id}/detail`)}
 				onSearchfilter={onSearchfilter}
 				onClearFilters={onClearFilters}
@@ -158,11 +155,11 @@ const ProductsPage = () => {
 
 			{/* Delete Confirmation Dialog */}
 			<ConfirmDialog
-				open={isDeleteDialogOpen}
-				onCancel={() => setIsDeleteDialogOpen(false)}
+				open={deletedFormModal.formModal.open}
+				onCancel={deletedFormModal.close}
 				onConfirm={confirmDelete}
 				title="Xác nhận xóa"
-				message={`Bạn có chắc chắn muốn xóa sản phẩm "${selectedProduct?.product_name}"?`}
+				message={`Bạn có chắc chắn muốn xóa sản phẩm "${deletedFormModal.formModal.data?.product_name}"?`}
 				isDanger={true}
 			/>
 		</Container>

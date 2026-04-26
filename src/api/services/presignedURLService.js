@@ -1,12 +1,23 @@
 import axiosInstance from '../axiosConfig';
+import axios from 'axios';
 import { validateHelper } from '@/helpers/validateHelper';
 
-const presifnedURLService = async (file, folder) => {
+const presignedURLService = async (file, folder) => {
 	try {
-		const res = await axiosInstance.post('/presigned-url', {
-			file,
-			folder,
-		});
+		// Create FormData and append file with correct key
+		const formData = new FormData();
+		formData.append('file', file);
+		formData.append('folder', folder);
+
+		const res = await axiosInstance.post(
+			'/storage/presigned-url',
+			formData,
+			{
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			},
+		);
 		return res.data;
 	} catch (error) {
 		const message = validateHelper(error);
@@ -16,19 +27,19 @@ const presifnedURLService = async (file, folder) => {
 
 const uploadFileToS3 = async (file, presignedURL) => {
 	try {
-		await axiosInstance.put(presignedURL, file, {
+		await axios.put(presignedURL, file, {
 			headers: {
 				'Content-Type': file.type,
 			},
 		});
 	} catch (error) {
-		const message = validateHelper(error);
-		throw new Error(message);
+		console.error(await error?.response?.data);
+		throw error;
 	}
 };
 
 const storageService = {
-	presifnedURLService,
+	presignedURLService,
 	uploadFileToS3,
 };
 

@@ -33,8 +33,8 @@ const createProduct = async (data) => {
 		const res = await axiosInstance.post(ENDPOINT, data);
 		return res.data.data;
 	} catch (error) {
-		const message = validateHelper(error);
-		throw new Error(message);
+		const errors = error.errors;
+		throw error;
 	}
 };
 
@@ -71,11 +71,12 @@ const getProductBatches = async (productId, params = {}) => {
 	}
 };
 
-const checkDuplicate = async (field, value) => {
+const checkDuplicate = async (field, value, id) => {
 	try {
 		const res = await axiosInstance.post(`${ENDPOINT}/check-duplicate`, {
 			field,
 			value,
+			id,
 		});
 		return res.data;
 	} catch (error) {
